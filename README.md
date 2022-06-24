@@ -28,14 +28,14 @@ Linux webserver config:
 hostname: influx.solarboatteam.hu 
 IP: 159.223.24.39
 username: sbt
-pwd: 
+pwd: kérdezd meg Magyar Mátét
 
 InfluxDB config:
 install mode: docker
 container ID: 243c548a0249 
 influx GUI: http://influx.solarboatteam.hu:8086 
 username: admin
-pwd: 
+pwd: kérdezd meg Magyar Mátét
 buckets (databases): 
 -	sbt (ID: de434eeb1358699e) Retention: 7 days
 -	lana (ID: 9f55909d46f827ec) Retention: 7 days
