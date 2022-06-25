@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 # BME Solar Boat Team 2022
 # Boat name: Lana
 # Responsible for code: BM
@@ -37,14 +39,14 @@ def run():
     while True:
         try:
             acc_xyz = lsm.accelerometer()
-            print(("{:+06.2f}g : {:+06.2f}g : {:+06.2f}g").format(*acc_xyz)) # majd ki kell torolni
+#            print(("{:+06.2f}g : {:+06.2f}g : {:+06.2f}g").format(*acc_xyz)) # majd ki kell torolni
             acc = Point("acceleration") \
                   .tag("sensor", "LSM303d") \
                   .field("Acceleration", ("{:+06.2f}g : {:+06.2f}g : {:+06.2f}g").format(*acc_xyz)) \
                   .time(datetime.utcnow(), WritePrecision.NS)
             
             mag_xyz = lsm.magnetometer()
-            print(("{:+06.2f} : {:+06.2f} : {:+06.2f}").format(*mag_xyz)) # majd ki kell torolni
+#            print(("{:+06.2f} : {:+06.2f} : {:+06.2f}").format(*mag_xyz)) # majd ki kell torolni
             mag = Point("magnetic_field") \
                   .tag("sensor", "LSM303d") \
                   .field("Magnetic field", ("{:+06.2f} : {:+06.2f} : {:+06.2f}").format(*mag_xyz)) \

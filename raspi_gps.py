@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 # BME Solar Boat Team 2022
 # Boat name: Lana
 # Responsible for code: BM
@@ -50,6 +52,7 @@ def run():
                 
                 if geo.lon == 0.0 and geo.lat == 0.0:
                     gps_err = "GPS pozicio 0, valoszinuleg nincs GPS jel, nezd meg a kek PPS LED vilagit-e"
+#                    print("GPS pozicio 0, valoszinuleg nincs GPS jel, nezd meg a kek PPS LED vilagit-e")
                     gps_err_msg = Point("GPS Error") \
                       .tag("sensor", "sparkfun ublox NEO-M9N") \
                       .field("Error message", gps_err) \
@@ -58,6 +61,7 @@ def run():
                 
                 if geo.lon != 0.0 and geo.lat != 0.0 and geo.headMot == 0.0:
                     gps_err = "Van GPS jel, de nem halad a hajo:OOO"
+#                    print("Van GPS jel, de nem halad a hajo:OOO")
                     gps_err_msg = Point("GPS Error") \
                       .tag("sensor", "sparkfun ublox NEO-M9N") \
                       .field("Error message", gps_err) \
@@ -83,7 +87,7 @@ def run():
                     
                     
             except (ValueError, IOError) as err:
-                print(err) # majd ki kell törölni
+#                print(err) # majd ki kell törölni
                 com_err_msg = Point("GPS module comm Error") \
                   .tag("sensor", "sparkfun ublox NEO-M9N") \
                   .field("Communication Error message", err) \
