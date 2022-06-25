@@ -6,7 +6,7 @@ Raspberry PI config:
 OS: Raspberry PI OS Lite (64-bit) (headless)
 hostname: telemetpi
 username: pi
-pwd: uszikAhajo!
+pwd: kérdezd meg Magyar Mátét
 network config: Ethernet; Bakonyi mobilnet hotspot (SSID: G5_8658 pwd: nemmondommeg:P)
 Installed modules: 
 -	python3
