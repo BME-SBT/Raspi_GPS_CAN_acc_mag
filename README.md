@@ -19,10 +19,19 @@ Location of scripts: /home/pi/scripts
 -	raspi_gps.py <- sending GPS data from NEO-M9N to influxDB
 -	raspi_acc_mag.py <- sending acceleration, magnetic field data from LSM303d to influxDB
 
+Python script launchers:
+location: /home/pi/scripts/
+- gps_launcher.sh
+- accmag_launcher.sh
+
 Run scripts after boot:
-	crontab: 
-@reboot sudo python /home/pi/scripts/raspi_gps.py
-@reboot sudo python /home/pi/scripts/raspi_acc_mag.py
+in crontab: 
+@reboot sudo python /home/pi/scripts/gps_launcher.sh > /var/log/sbt/gps/gps_log.txt 2>&1
+@reboot sudo python /home/pi/scripts/accmag_launcher.sh > /var/log/sbt/accmag/accmag_log.txt 2>&1
+
+Location of logfiles:
+- /var/log/sbt/gps/gps_log.txt
+- /var/log/sbt/accmag/accmag_log.txt
 
 Linux webserver config:
 hostname: influx.solarboatteam.hu 
