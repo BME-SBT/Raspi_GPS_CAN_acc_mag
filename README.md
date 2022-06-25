@@ -6,7 +6,7 @@ Raspberry PI config:
 OS: Raspberry PI OS Lite (64-bit) (headless)
 hostname: telemetpi
 username: pi
-pwd: kérdezd meg Magyar Mátét
+pwd: kérdezd meg Bakonyi Márkot
 network config: Ethernet; Bakonyi mobilnet hotspot (SSID: G5_8658 pwd: nemmondommeg:P)
 Installed modules: 
 -	python3
@@ -25,11 +25,17 @@ location: /home/pi/scripts/
 - accmag_launcher.sh
 
 Run scripts after boot:
-in crontab: 
-@reboot sudo python /home/pi/scripts/gps_launcher.sh > /var/log/sbt/gps/gps_log.txt 2>&1
-@reboot sudo python /home/pi/scripts/accmag_launcher.sh > /var/log/sbt/accmag/accmag_log.txt 2>&1
+in systemd (/etc/systemd/system/):
+config: After=network-online.target, Restart=on-failure, RestartSec=5s # valamiért 06.25-én kb 1 perc után megszakad a kapcsolat az influxxal, ezért kell, előtte
+# működött
+- gps_launcher.service (Enabled, working)
+- accmag_launcher.service (Disabled, not working: I^2C IOError)
 
-Location of logfiles:
+Location of logfiles: # kurvaszar, javítanom, bővítenem kell, pontosítanom kell, logrotate, stb.
+Active:
+- /tmp/gps_log/gps_log-$(date +"%y-%m-%d-%T").txt
+- /tmp/accmag_log/accmag_log-$(date +"%y-%m-%d-%T").txt
+Inactive:
 - /var/log/sbt/gps/gps_log.txt
 - /var/log/sbt/accmag/accmag_log.txt
 
@@ -46,7 +52,7 @@ influx GUI: http://influx.solarboatteam.hu:8086
 username: admin
 pwd: kérdezd meg Magyar Mátét
 buckets (databases): 
--	sbt (ID: de434eeb1358699e) Retention: 7 days
+-	sbt (ID: de434eeb1358699e) Retention: 7 days # nem tudom ki csinálta, és miért (Máté???)
 -	lana (ID: 9f55909d46f827ec) Retention: 7 days
 Ennél hosszabb retentiont nem tudok adni, mert a következő hibaüzenetet kapom: Failed to update bucket: "shard-group duration must also be updated to be smaller than new retention duration" 
 Majd ha lesz rá időm utánaolvasok jobban, hogy ez mi a tosz. Vagy új bucketet csinálok.
@@ -61,7 +67,7 @@ container ID: d11f3bdda3d9
 
 
 
-Installed python libraries:
+Installed python libraries 2022.06.24:
 pi@telemetpi:~/scripts $ pip list
 Package            Version
 ------------------ ---------
