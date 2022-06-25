@@ -7,7 +7,7 @@ OS: Raspberry PI OS Lite (64-bit) (headless)
 hostname: telemetpi
 username: pi
 pwd: kérdezd meg Bakonyi Márkot
-network config: Ethernet; Bakonyi mobilnet hotspot (SSID: G5_8658 pwd: nemmondommeg:P)
+network config: Ethernet; Bakonyi mobilnet hotspot (SSID: G5_.... pwd: nemmondommeg:P)
 Installed modules: 
 -	python3
 -	idle3 
