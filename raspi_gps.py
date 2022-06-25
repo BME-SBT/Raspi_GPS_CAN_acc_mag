@@ -28,7 +28,7 @@ gps = UbloxGps(port)
 # vagy lehet import pytz-vel is
 
 # Sets the variables of the influxDB (You can generate an API token from the "API Tokens Tab" in the UI)
-token = "APPLVlMGyeWeKoRhipR-1ULSX5mtduugSWo2jDTbXyDinF1TyahGU9smvMOkSwrP0TdYv6VIVEm7jcLosozZUg==" # lana_token
+token = "" # lana_token
 org = "sbt"
 bucket = "lana" # database
 
