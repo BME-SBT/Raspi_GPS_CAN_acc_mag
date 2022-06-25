@@ -56,7 +56,7 @@ buckets (databases):
 Ennél hosszabb retentiont nem tudok adni, mert a következő hibaüzenetet kapom: Failed to update bucket: "shard-group duration must also be updated to be smaller than new retention duration" 
 Majd ha lesz rá időm utánaolvasok jobban, hogy ez mi a tosz. Vagy új bucketet csinálok.
 API tokens:
--	admin’s Token -> permissions: all (8WjcfKiq7otthk5XjhFokcI8Ll37ni_GyGBJ4KjYZt2LE34NDsfm_wRqdBKnexFcYSXkk2d28Xr2p0PZk-1quA==)
+-	admin’s Token -> permissions: all (......)
 -	lana_token -> permisiions: buckets-lana (read, write)
 (APPLVlMGyeWeKoRhipR-1ULSX5mtduugSWo2jDTbXyDinF1TyahGU9smvMOkSwrP0TdYv6VIVEm7jcLosozZUg==)
 
