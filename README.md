@@ -26,8 +26,7 @@ location: /home/pi/scripts/
 
 Run scripts after boot:
 in systemd (/etc/systemd/system/):
-config: After=network-online.target, Restart=on-failure, RestartSec=5s # valamiért 06.25-én kb 1 perc után megszakad a kapcsolat az influxxal, ezért kell, előtte
-# működött
+config: After=network-online.target, Restart=on-failure, RestartSec=5s # valamiért 06.25-én kb 1 perc után megszakad a kapcsolat az influxxal, ezért kell, előtte működött
 - gps_launcher.service (Enabled, working)
 - accmag_launcher.service (Disabled, not working: I^2C IOError)
 
