@@ -41,18 +41,21 @@ def send2influx(msg2send):
 
 
 ########################
-def gps_verify()
-  gps_probes = []
+def gps_verify():
+  gps_probes = [0, 1, 2]
   geo = gps.geo_coords()
-  while True:
+  while True: # ez így loopban megy, nem biztos, hogy a legjobb megoldás!
     try:
-      for (x = 0; x < 3; x = x + 1):
-      gps_probes[x] = geo.lat
-    except:  
+        for x in range(3):
+        gps_probes[x] = geo.lat
+    except:
+      pass    
 
-  while True:
-    try:
-      gps_probes[0] <= gps_probes[1]-0.01  and gps_probes[2] in range(0.1)
+  if gps_probes[0] in range (gps_probes[1]-0.01, gps_probes[1]+0.01) and gps_probes[1] in range (gps_probes[2]-0.01, gps_probes[2]+0.01):
+    return True
+  else
+    return False # meg kell csinálni, hogy logba és/vagy influxba küldjön hibaüzit ekkor!!!!
+    
 #######################      
     
 
@@ -117,4 +120,6 @@ def run():
 
 
 if __name__ == '__main__':
-    run()
+#    gps_verify() # elvileg nem kell, mert az if meghívja
+    if gps_verify() == True:
+        run()
