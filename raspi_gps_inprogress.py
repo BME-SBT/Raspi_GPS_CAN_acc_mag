@@ -15,6 +15,7 @@ import serial
 from datetime import datetime
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
+import numpy as np
 
 # sets the connection with GPS module
 # to check which serial port is connected to GPS module run: ls -la /dev/serial/by-id 
@@ -42,19 +43,16 @@ def send2influx(msg2send):
 
 ########################
 def gps_verify():
-  gps_probes = [0, 1, 2]
+  gps_probes = [0, 1, 2, 3, 4, 5]
   geo = gps.geo_coords()
-  while True: # ez így loopban megy, nem biztos, hogy a legjobb megoldás!
-    try:
-        for x in range(3):
-        gps_probes[x] = geo.lat
-    except:
-      pass    
-
-  if gps_probes[0] in range (gps_probes[1]-0.01, gps_probes[1]+0.01) and gps_probes[1] in range (gps_probes[2]-0.01, gps_probes[2]+0.01):
-    return True
-  else
-    return False # meg kell csinálni, hogy logba és/vagy influxba küldjön hibaüzit ekkor!!!!
+  while True: # ez így loopban megy, nem biztos, hogy a legjobb megoldás?
+     for x in range(6):
+        gps_probes[x] = round(geo.lat,2)
+        if gps_probes[0] in np.arange(gps_probes[1]-0.01, gps_probes[1]+0.02) and gps_probes[1] in np.arange(gps_probes[2]-0.01, gps_probes[2]+0.02):
+            return True
+        else
+            return False # meg kell csinálni, hogy logba és/vagy influxba küldjön hibaüzit ekkor!!!!
+  
     
 #######################      
     
@@ -121,5 +119,5 @@ def run():
 
 if __name__ == '__main__':
 #    gps_verify() # elvileg nem kell, mert az if meghívja
-    if gps_verify() == True:
+    if gps_verify() == True: # egyszer checckel, vagy folyamatosan? while jobb lenne?
         run()
