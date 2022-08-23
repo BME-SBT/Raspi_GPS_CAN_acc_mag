@@ -38,10 +38,9 @@ def send2influx(msg2send):
     with InfluxDBClient(url=, token=token, org=org) as client:
         write_api = client.write_api(write_options=SYNCHRONOUS)
         write_api.write(bucket, org, msg2send)
-#     client.close() # lehet fölösleges
 
 
-########################
+# contiounusly checks six GPS signal, weather they are close to each other (in 0.02 range) or not 
 def gps_verify():
   gpslat_probes = [0, 1, 2, 3, 4, 5]
   gpslon_probes = [0, 1, 2, 3, 4, 5]
@@ -55,22 +54,15 @@ def gps_verify():
               return True
             else
               return False # meg kell csinálni, hogy logba és/vagy influxba küldjön hibaüzit ekkor!!!!
-  
-    
-#######################      
-    
+
 
 def run():
 
     try:
-#         print("Listening for UBX Messages") # majd ki kell törölni
         while True:
             try:
                 geo = gps.geo_coords()
-#                 print("Longitude: ", geo.lon) # majd ki kell törölni
-#                 print("Latitude: ", geo.lat)  # majd ki kell törölni
-#                 print("Heading of Motion: ", geo.headMot) # majd ki kell törölni
-                
+
                 if geo.lon == 0.0 and geo.lat == 0.0:
                     gps_err = "GPS pozicio 0, valoszinuleg nincs GPS jel, nezd meg a kek PPS LED vilagit-e"
 #                    print("GPS pozicio 0, valoszinuleg nincs GPS jel, nezd meg a kek PPS LED vilagit-e")
@@ -82,7 +74,6 @@ def run():
                 
                 if geo.lon != 0.0 and geo.lat != 0.0 and geo.headMot == 0.0:
                     gps_err = "Van GPS jel, de nem halad a hajo:OOO"
-#                    print("Van GPS jel, de nem halad a hajo:OOO")
                     gps_err_msg = Point("GPS Error") \
                       .tag("sensor", "sparkfun ublox NEO-M9N") \
                       .field("Error message", gps_err) \
@@ -108,7 +99,7 @@ def run():
                     
                     
             except (ValueError, IOError) as err:
-#                print(err) # majd ki kell törölni
+#                print(err) # logba kell kiírni
                 com_err_msg = Point("GPS module comm Error") \
                   .tag("sensor", "sparkfun ublox NEO-M9N") \
                   .field("Communication Error message", err) \
@@ -121,6 +112,6 @@ def run():
 
 
 if __name__ == '__main__':
-#    gps_verify() # elvileg nem kell, mert az if meghívja
-    while gps_verify() == True: # folyamatosan chekkel
+  # if six GPS signals are in 0.02 range it enables to run the 'run' function
+    while gps_verify() == True: # folyamatosan chekkel (remélem)
         run()
