@@ -27,6 +27,8 @@ logger.setLevel('INFO')
 timestr = time.strftime("%Y%m%d_%H%M")
 logfilename = "GPS_log_" + timestr + ".log"
 handler = logging.FileHandler(logfilename)
+#handler = logging.FileHandler('//var/log/gps_log/'+logfilename)
+#handler = logging.FileHandler(r"\\var\log\gps_log\"+logfilename)
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
