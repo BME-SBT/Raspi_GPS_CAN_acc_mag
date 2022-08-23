@@ -43,15 +43,18 @@ def send2influx(msg2send):
 
 ########################
 def gps_verify():
-  gps_probes = [0, 1, 2, 3, 4, 5]
+  gpslat_probes = [0, 1, 2, 3, 4, 5]
+  gpslon_probes = [0, 1, 2, 3, 4, 5]
   geo = gps.geo_coords()
   while True: # ez így loopban megy, nem biztos, hogy a legjobb megoldás?
      for x in range(6):
-        gps_probes[x] = round(geo.lat,2)
-        if gps_probes[0] in np.arange(gps_probes[1]-0.01, gps_probes[1]+0.02) and gps_probes[1] in np.arange(gps_probes[2]-0.01, gps_probes[2]+0.02):
-            return True
-        else
-            return False # meg kell csinálni, hogy logba és/vagy influxba küldjön hibaüzit ekkor!!!!
+        gpslat_probes[x] = round(geo.lat,2)
+        gpslon_probes[x] = round(geo.lon,2)
+        if gpslat_probes[0] in np.arange(gpslat_probes[1]-0.01, gpslat_probes[1]+0.02,0.01) and gpslat_probes[1] in np.arange(gpslat_probes[2]-0.01, gpslat_probes[2]+0.02,0.01) and gpslat_probes[2] in np.arange(gpslat_probes[3]-0.01, gpslat_probes[3]+0.02,0.01) and gpslat_probes[3] in np.arange(gpslat_probes[4]-0.01, gpslat_probes[4]+0.02,0.01) and gpslat_probes[4] in np.arange(gpslat_probes[5]-0.01, gpslat_probes[5]+0.02,0.01):
+            if gpslon_probes[0] in np.arange(gpslon_probes[1]-0.01, gpslon_probes[1]+0.02,0.01) and gpslon_probes[1] in np.arange(gpslon_probes[2]-0.01, gpslon_probes[2]+0.02,0.01) and gpslon_probes[2] in np.arange(gpslon_probes[3]-0.01, gpslon_probes[3]+0.02,0.01) and gpslon_probes[3] in np.arange(gpslon_probes[4]-0.01, gpslon_probes[4]+0.02,0.01) and gpslon_probes[4] in np.arange(gpslon_probes[5]-0.01, gpslon_probes[5]+0.02,0.01):
+              return True
+            else
+              return False # meg kell csinálni, hogy logba és/vagy influxba küldjön hibaüzit ekkor!!!!
   
     
 #######################      
@@ -119,5 +122,5 @@ def run():
 
 if __name__ == '__main__':
 #    gps_verify() # elvileg nem kell, mert az if meghívja
-    if gps_verify() == True: # egyszer checckel, vagy folyamatosan? while jobb lenne?
+    while gps_verify() == True: # folyamatosan chekkel
         run()
