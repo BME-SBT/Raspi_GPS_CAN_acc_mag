@@ -17,19 +17,18 @@ from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
 import numpy as np
 import logging
+import time
 
-# ha az alatta lévő szar lenne
-#logging.basicConfig(filename="GPS_log.log",
-#                    level=logging.INFO, 
-#                    format="%(asctime)s - %(levelname)s - %(message)s")
-
-Log_Format = '%(asctime)s - %(levelname)s - %(message)s'
-logging.Formatter(Log_Format)
+# Logging setup
+log_format = '%(asctime)s - %(levelname)s - %(message)s'
+formatter = logging.Formatter(log_format)
 logger = logging.getLogger()
 logger.setLevel('INFO')
-handler = logging.FileHandler('GPS_log_%Y-%m-%d_%H-%M.log')
+timestr = time.strftime("%Y%m%d_%H%M")
+logfilename = "GPS_log_" + timestr + ".log"
+handler = logging.FileHandler(logfilename)
+handler.setFormatter(formatter)
 logger.addHandler(handler)
-
 
 # sets the connection with GPS module
 # to check which serial port is connected to GPS module run: ls -la /dev/serial/by-id 
@@ -60,7 +59,7 @@ def gps_verify():
         if gpslat_probes[0] in np.arange(gpslat_probes[1]-0.01, gpslat_probes[1]+0.02,0.01) and gpslat_probes[1] in np.arange(gpslat_probes[2]-0.01, gpslat_probes[2]+0.02,0.01) and gpslat_probes[2] in np.arange(gpslat_probes[3]-0.01, gpslat_probes[3]+0.02,0.01) and gpslat_probes[3] in np.arange(gpslat_probes[4]-0.01, gpslat_probes[4]+0.02,0.01) and gpslat_probes[4] in np.arange(gpslat_probes[5]-0.01, gpslat_probes[5]+0.02,0.01):
             if gpslon_probes[0] in np.arange(gpslon_probes[1]-0.01, gpslon_probes[1]+0.02,0.01) and gpslon_probes[1] in np.arange(gpslon_probes[2]-0.01, gpslon_probes[2]+0.02,0.01) and gpslon_probes[2] in np.arange(gpslon_probes[3]-0.01, gpslon_probes[3]+0.02,0.01) and gpslon_probes[3] in np.arange(gpslon_probes[4]-0.01, gpslon_probes[4]+0.02,0.01) and gpslon_probes[4] in np.arange(gpslon_probes[5]-0.01, gpslon_probes[5]+0.02,0.01):
               return True
-            else
+            else:
               return False # meg kell csinálni, hogy logba és/vagy influxba küldjön hibaüzit ekkor!!!!
 
             
