@@ -16,17 +16,25 @@ from datetime import datetime
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
 import numpy as np
+import logging
+
+# ha az alatta lévő szar lenne
+#logging.basicConfig(filename="GPS_log.log",
+#                    level=logging.INFO, 
+#                    format="%(asctime)s - %(levelname)s - %(message)s")
+
+Log_Format = '%(asctime)s - %(levelname)s - %(message)s'
+logging.Formatter(Log_Format)
+logger = logging.getLogger()
+logger.setLevel('INFO')
+handler = logging.FileHandler('GPS_log_%Y-%m-%d_%H-%M.log')
+logger.addHandler(handler)
+
 
 # sets the connection with GPS module
 # to check which serial port is connected to GPS module run: ls -la /dev/serial/by-id 
-port = serial.Serial('/dev/ttyACM0', baudrate=38400, timeout=1) # change ttyACM0 if neccessary (to the correct port)
+port = serial.Serial('/dev/ttyGPS', baudrate=38400, timeout=1) # change ttyGPS if neccessary
 gps = UbloxGps(port)
-
-# # ha nem lenne jó a kiküldéskor írt megoldás
-# import time # lehet nem kell
-# utcdate = datetime.datetime.utcnow()
-# timestamp = utcdate + datetime.timedelta(hours=2) #ez igy joooo?
-# vagy lehet import pytz-vel is
 
 # Sets the variables of the influxDB (You can generate an API token from the "API Tokens Tab" in the UI)
 token = "" # lana_token
@@ -55,7 +63,7 @@ def gps_verify():
             else
               return False # meg kell csinálni, hogy logba és/vagy influxba küldjön hibaüzit ekkor!!!!
 
-            ###
+            
 
 def run():
 
@@ -66,7 +74,6 @@ def run():
 
                 if geo.lon == 0.0 and geo.lat == 0.0:
                     gps_err = "GPS pozicio 0, valoszinuleg nincs GPS jel, nezd meg a kek PPS LED vilagit-e"
-#                    print("GPS pozicio 0, valoszinuleg nincs GPS jel, nezd meg a kek PPS LED vilagit-e")
                     gps_err_msg = Point("GPS Error") \
                       .tag("sensor", "sparkfun ublox NEO-M9N") \
                       .field("Error message", gps_err) \
