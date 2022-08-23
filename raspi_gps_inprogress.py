@@ -21,7 +21,7 @@ import time
 
 # Logging setup
 log_format = '%(asctime)s - %(levelname)s - %(message)s'
-formatter = logging.Formatter(log_format)
+formatter = logging.Formatter(log_format, "%Y-%m-%d %H:%M:%S")
 logger = logging.getLogger()
 logger.setLevel('INFO')
 timestr = time.strftime("%Y%m%d_%H%M")
@@ -53,14 +53,21 @@ def gps_verify():
   gpslon_probes = [0, 1, 2, 3, 4, 5]
   geo = gps.geo_coords()
   while True: # ez így loopban megy, nem biztos, hogy a legjobb megoldás?
-     for x in range(6):
+     for x in range(6): # contiounusly rotates the last six data, check in every rotation
         gpslat_probes[x] = round(geo.lat,2)
         gpslon_probes[x] = round(geo.lon,2)
         if gpslat_probes[0] in np.arange(gpslat_probes[1]-0.01, gpslat_probes[1]+0.02,0.01) and gpslat_probes[1] in np.arange(gpslat_probes[2]-0.01, gpslat_probes[2]+0.02,0.01) and gpslat_probes[2] in np.arange(gpslat_probes[3]-0.01, gpslat_probes[3]+0.02,0.01) and gpslat_probes[3] in np.arange(gpslat_probes[4]-0.01, gpslat_probes[4]+0.02,0.01) and gpslat_probes[4] in np.arange(gpslat_probes[5]-0.01, gpslat_probes[5]+0.02,0.01):
             if gpslon_probes[0] in np.arange(gpslon_probes[1]-0.01, gpslon_probes[1]+0.02,0.01) and gpslon_probes[1] in np.arange(gpslon_probes[2]-0.01, gpslon_probes[2]+0.02,0.01) and gpslon_probes[2] in np.arange(gpslon_probes[3]-0.01, gpslon_probes[3]+0.02,0.01) and gpslon_probes[3] in np.arange(gpslon_probes[4]-0.01, gpslon_probes[4]+0.02,0.01) and gpslon_probes[4] in np.arange(gpslon_probes[5]-0.01, gpslon_probes[5]+0.02,0.01):
               return True
             else:
-              return False # meg kell csinálni, hogy logba és/vagy influxba küldjön hibaüzit ekkor!!!!
+              gps_err = "anyad"
+              gps_err_msg = Point("GPS Error") \
+                      .tag("sensor", "sparkfun ublox NEO-M9N") \
+                      .field("Error message", gps_err) \
+                      .time(datetime.utcnow(), WritePrecision.NS)
+              send2influx(gps_err_msg)
+              logger.info('GPS jel rossz, gyakran valtozik a jel')
+              return False
 
             
 
