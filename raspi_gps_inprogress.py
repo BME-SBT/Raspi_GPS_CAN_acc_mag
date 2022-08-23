@@ -55,7 +55,7 @@ def gps_verify():
             else
               return False # meg kell csinálni, hogy logba és/vagy influxba küldjön hibaüzit ekkor!!!!
 
-            ###
+            
 
 def run():
 
