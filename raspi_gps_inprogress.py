@@ -19,6 +19,9 @@ import numpy as np
 import logging
 import time
 
+import pathlib
+scriptpath = pathlib.Path(__file__).parent.resolve()
+
 # Logging setup - generates new file when script is launched
 log_format = '%(asctime)s - %(levelname)s - %(message)s'
 formatter = logging.Formatter(log_format, "%Y-%m-%d %H:%M:%S")
@@ -41,10 +44,16 @@ gps = UbloxGps(port)
 token = "" # lana_token
 org = "sbt"
 bucket = "lana" # database
+tokenfile = open(scriptpath/".lana_token","r")
+lana_token = str(tokenfile.read())
+tokenfile.close()
+urlfile = open(scriptpath/".lana_token","r")
+influx_url = str(urlfile.read())
+urlfile.close()
 
 # sends given data to influxDB which is set in function
 def send2influx(msg2send):
-    with InfluxDBClient(url=, token=token, org=org) as client:
+    with InfluxDBClient(url=influx_url, token=lana_token, org=org) as client:
         write_api = client.write_api(write_options=SYNCHRONOUS)
         write_api.write(bucket, org, msg2send)
 
