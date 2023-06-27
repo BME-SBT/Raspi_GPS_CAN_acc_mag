@@ -37,12 +37,15 @@ org = "sbt"
 bucketfile = open(scriptpath/".bucket_name","r") # database name
 bucket_name = str(bucketfile.read())
 bucketfile.close()
+print(bucket_name)
 tokenfile = open(scriptpath/".lana_token","r")
 lana_token = str(tokenfile.read())
 tokenfile.close()
+print(lana_token)
 urlfile = open(scriptpath/".influx_url","r")
 influx_url = str(urlfile.read())
 urlfile.close()
+print(influx_url)
 
 # sends given data to influxDB which is set in function
 def send2influx(msg2send):
