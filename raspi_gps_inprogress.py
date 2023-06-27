@@ -23,11 +23,11 @@ scriptpath = pathlib.Path(__file__).parent.resolve()
 
 # sets the connection with GPS module
 # to check which serial port is connected to GPS module run: ls -la /dev/serial/by-id 
-port = serial.Serial('/dev/ttyGPS', baudrate=38400, timeout=1) # change ttyGPS if neccessary
+port = serial.Serial('/dev/ttyGPS', baudrate=38400, timeout=1) # change default:ttyACM0 if neccessary (to the correct port: ttyGPS)
 gps = UbloxGps(port)
 
 # Sets the variables of the influxDB (You can generate an API token from the "API Tokens Tab" in the UI)
-token = "" # lana_token
+#token = "" # lana_token
 org = "sbt"
 bucket = "lana" # database
 tokenfile = open(scriptpath/".lana_token","r")
@@ -42,7 +42,7 @@ def send2influx(msg2send):
     with InfluxDBClient(url=influx_url, token=lana_token, org=org) as client:
         write_api = client.write_api(write_options=SYNCHRONOUS)
         write_api.write(bucket, org, msg2send)
-
+#     client.close() # lehet fölösleges
 
 # contiounusly checks six GPS signal in every second, weather they are close to each other (in 0.02 range) or not 
 def gps_verify():
@@ -146,7 +146,6 @@ def run():
 
     finally:
         port.close()
-
 
 if __name__ == '__main__':
   # if six GPS signals are in 0.02 range it enables to run the 'run' function
