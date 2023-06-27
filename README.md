@@ -6,8 +6,6 @@ Raspberry PI config:
 OS: Raspberry PI OS Lite (64-bit) (headless)
 hostname: telemetpi
 username: pi
-pwd: kérdezd meg Bakonyi Márkot
-network config: Ethernet; Bakonyi mobilnet hotspot (SSID: G5_.... pwd: nemmondommeg:P)
 Installed modules: 
 -	python3
 -	idle3 
@@ -30,13 +28,16 @@ config: After=network-online.target, Restart=on-failure, RestartSec=5s # valami�
 - gps_launcher.service (Enabled, working)
 - accmag_launcher.service (Disabled, not working: I^2C IOError)
 
-Location of logfiles: # kurvaszar, javítanom, bővítenem kell, pontosítanom kell, logrotate, stb.
-Active:
-- /tmp/gps_log/gps_log-$(date +"%y-%m-%d-%T").txt
-- /tmp/accmag_log/accmag_log-$(date +"%y-%m-%d-%T").txt
-Inactive:
-- /var/log/sbt/gps/gps_log.txt
-- /var/log/sbt/accmag/accmag_log.txt
+[Unit]
+Description=GPS launcher
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /home/pi/scripts/raspi_gps.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
 
 Linux webserver config:
 hostname: influx.solarboatteam.hu 
@@ -46,25 +47,20 @@ pwd: kérdezd meg Magyar Mátét
 
 InfluxDB config:
 install mode: docker
-container ID: 243c548a0249 
 influx GUI: http://influx.solarboatteam.hu:8086 
 username: admin
 pwd: kérdezd meg Magyar Mátét
 buckets (databases): 
--	sbt (ID: de434eeb1358699e) Retention: 7 days # nem tudom ki csinálta, és miért (Máté???)
--	lana (ID: 9f55909d46f827ec) Retention: 7 days
-Ennél hosszabb retentiont nem tudok adni, mert a következő hibaüzenetet kapom: Failed to update bucket: "shard-group duration must also be updated to be smaller than new retention duration" 
-Majd ha lesz rá időm utánaolvasok jobban, hogy ez mi a tosz. Vagy új bucketet csinálok.
+-	sbt (ID: de434eeb1358699e) Retention: forever
+-	lana (ID: 9f55909d46f827ec) Retention: forever
+
 API tokens:
 -	admin’s Token -> permissions: all (......)
--	lana_token -> permisiions: buckets-lana (read, write)
+-	lana_token -> permissions: buckets-lana (read, write)
 (APPLVlMGyeWeKoRhipR-1ULSX5mtduugSWo2jDTbXyDinF1TyahGU9smvMOkSwrP0TdYv6VIVEm7jcLosozZUg==)
 
 Grafana config:
 install mode: docker
-container ID: d11f3bdda3d9 
-
-
 
 Installed python libraries 2022.06.24:
 pi@telemetpi:~/scripts $ pip list
@@ -181,3 +177,14 @@ webencodings       0.5.1
 Werkzeug           1.0.1
 wheel              0.34.2
 wrapt              1.12.1
+
+
+
+looking at parent device '/devices/platform/soc/3f980000.usb/usb1/1-1':
+ATTRS{idProduct}=="01a9"
+ATTRS{idVendor}=="1546"
+
+SUBSYSTEM=="tty", ATTRS{idProduct}=="01a9", ATTRS{idVendor}=="1546", SYMLINK+="ttyGPS"
+
+lrwxrwxrwx  1 root root           7 Jun 27 21:50 ttyGPS -> ttyACM0
+
