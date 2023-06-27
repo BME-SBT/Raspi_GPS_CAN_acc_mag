@@ -53,6 +53,13 @@ def run():
     try:
         while True:
             try:
+                gps_err1 = 0 # Communication OK with GPS module
+                gps_err_msg1 = Point("GPS_Comm_Error") \
+                  .tag("sensor", "sparkfun_ublox_NEO-M9N") \
+                  .field("Error_message", gps_err1) \
+                  .time(datetime.utcnow(), WritePrecision.NS)
+                send2influx(gps_err_msg1)
+
                 geo = gps.geo_coords()
                 
                 if geo.lon == 0.0 and geo.lat == 0.0:
@@ -62,6 +69,13 @@ def run():
                       .field("Error_message", gps_err) \
                       .time(datetime.utcnow(), WritePrecision.NS)
                     send2influx(gps_err_msg)
+                else:
+                    gps_err2 = 0 # van GPS jel
+                    gps_err_msg2 = Point("GPS_Position_Error") \
+                      .tag("sensor", "sparkfun_ublox_NEO-M9N") \
+                      .field("Error_message", gps_err2) \
+                      .time(datetime.utcnow(), WritePrecision.NS)
+                    send2influx(gps_err_msg2)
                 
                 if geo.lon != 0.0 and geo.lat != 0.0 and geo.headMot == 0.0:
                     gps_err = 3 # Van GPS jel, de nem halad a hajo:OOO
@@ -70,7 +84,13 @@ def run():
                       .field("Error_message", gps_err) \
                       .time(datetime.utcnow(), WritePrecision.NS)
                     send2influx(gps_err_msg)
-                
+                else:
+                    gps_err3 = 0 # Van GPS jel, halad a hajo
+                    gps_err_msg3 = Point("GPS_Motion_Error") \
+                      .tag("sensor", "sparkfun_ublox_NEO-M9N") \
+                      .field("Error_message", gps_err3) \
+                      .time(datetime.utcnow(), WritePrecision.NS)
+                    send2influx(gps_err_msg3)
                 
                 gps_coords = Point("GPS_coordinates") \
                   .tag("sensor", "sparkfun_ublox_NEO-M9N") \
@@ -91,12 +111,14 @@ def run():
                 send2influx(heading)                                    
                     
             except (ValueError, IOError) as err:
-                gps_err = 1 # Communication Error with GPS module
-                gps_err_msg = Point("GPS_Error") \
+                gps_err1 = 1 # Communication Error with GPS module
+                gps_err_msg1 = Point("GPS_Comm_Error") \
                   .tag("sensor", "sparkfun_ublox_NEO-M9N") \
-                  .field("Error_message", gps_err) \
+                  .field("Error_message", gps_err1) \
                   .time(datetime.utcnow(), WritePrecision.NS)
-                send2influx(gps_err_msg)
+                send2influx(gps_err_msg1)
+                
+        time.sleep(0.50) # biztos ami sicher
 
     finally:
         port.close()

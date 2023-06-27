@@ -2,11 +2,11 @@
 
 # BME Solar Boat Team 2022
 # Boat name: Lana
-# Responsible for code: BM
+# Responsible for code: bm971
 
 # on Raspberry PI 4
 # Sends GPS coordinates and heading of motion from GPS module to influxDB
-# GPS module: u-blox NEO-M9N
+# GPS module: Sparkfun u-blox NEO-M9N
 # Connected to Raspberry PI via serial port
 
 
@@ -108,7 +108,7 @@ def run():
                       .time(datetime.utcnow(), WritePrecision.NS)
                     send2influx(gps_err_msg3)
                 else:
-                    gps_err3 = 0 # Van GPS jel, de nem halad a hajo:OOO
+                    gps_err3 = 0 # Van GPS jel, halad a hajo
                     gps_err_msg3 = Point("GPS_Motion_Error") \
                       .tag("sensor", "sparkfun_ublox_NEO-M9N") \
                       .field("Error_message", gps_err3) \
