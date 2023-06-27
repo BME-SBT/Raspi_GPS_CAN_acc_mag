@@ -63,12 +63,12 @@ def run():
                 geo = gps.geo_coords()
                 
                 if geo.lon == 0.0 and geo.lat == 0.0:
-                    gps_err = 2 # GPS pozicio 0, valoszinuleg nincs GPS jel, nezd meg a kek PPS LED vilagit-e
-                    gps_err_msg = Point("GPS_Error") \
+                    gps_err2 = 1 # GPS pozicio 0, valoszinuleg nincs GPS jel, nezd meg a kek PPS LED vilagit-e
+                    gps_err_msg2 = Point("GPS_Position_Error") \
                       .tag("sensor", "sparkfun_ublox_NEO-M9N") \
-                      .field("Error_message", gps_err) \
+                      .field("Error_message", gps_err2) \
                       .time(datetime.utcnow(), WritePrecision.NS)
-                    send2influx(gps_err_msg)
+                    send2influx(gps_err_msg2)
                 else:
                     gps_err2 = 0 # van GPS jel
                     gps_err_msg2 = Point("GPS_Position_Error") \
@@ -78,12 +78,12 @@ def run():
                     send2influx(gps_err_msg2)
                 
                 if geo.lon != 0.0 and geo.lat != 0.0 and geo.headMot == 0.0:
-                    gps_err = 3 # Van GPS jel, de nem halad a hajo:OOO
-                    gps_err_msg = Point("GPS_Error") \
+                    gps_err3 = 1 # Van GPS jel, de nem halad a hajo:OOO
+                    gps_err_msg3 = Point("GPS_Motion_Error") \
                       .tag("sensor", "sparkfun_ublox_NEO-M9N") \
-                      .field("Error_message", gps_err) \
+                      .field("Error_message", gps_err3) \
                       .time(datetime.utcnow(), WritePrecision.NS)
-                    send2influx(gps_err_msg)
+                    send2influx(gps_err_msg3)
                 else:
                     gps_err3 = 0 # Van GPS jel, halad a hajo
                     gps_err_msg3 = Point("GPS_Motion_Error") \
@@ -103,6 +103,7 @@ def run():
                   .field("Heading_of_Motion", geo.headMot) \
                   .time(datetime.utcnow(), WritePrecision.NS)
                 
+                # # lehet külön kiküldés javítana a heading problémán???
                 # lana_gps = []
                 # lana_gps.append([gps_coords, heading])
                 # send2influx(lana_gps)
