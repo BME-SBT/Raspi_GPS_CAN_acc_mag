@@ -16,7 +16,6 @@ from datetime import datetime
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
 import numpy as np
-import logging
 import time
 
 import pathlib
@@ -56,14 +55,20 @@ def gps_verify():
         gpslon_probes[x] = round(geo.lon,2)
         if gpslat_probes[0] in np.arange(gpslat_probes[1]-0.01, gpslat_probes[1]+0.02,0.01) and gpslat_probes[1] in np.arange(gpslat_probes[2]-0.01, gpslat_probes[2]+0.02,0.01) and gpslat_probes[2] in np.arange(gpslat_probes[3]-0.01, gpslat_probes[3]+0.02,0.01) and gpslat_probes[3] in np.arange(gpslat_probes[4]-0.01, gpslat_probes[4]+0.02,0.01) and gpslat_probes[4] in np.arange(gpslat_probes[5]-0.01, gpslat_probes[5]+0.02,0.01):
             if gpslon_probes[0] in np.arange(gpslon_probes[1]-0.01, gpslon_probes[1]+0.02,0.01) and gpslon_probes[1] in np.arange(gpslon_probes[2]-0.01, gpslon_probes[2]+0.02,0.01) and gpslon_probes[2] in np.arange(gpslon_probes[3]-0.01, gpslon_probes[3]+0.02,0.01) and gpslon_probes[3] in np.arange(gpslon_probes[4]-0.01, gpslon_probes[4]+0.02,0.01) and gpslon_probes[4] in np.arange(gpslon_probes[5]-0.01, gpslon_probes[5]+0.02,0.01):
+              gps_err4 = 0 # GPS position is acceptable
+              gps_err_msg4 = Point("GPS_Precison_Error") \
+                      .tag("sensor", "sparkfun_ublox_NEO-M9N") \
+                      .field("Error_message", gps_err4) \
+                      .time(datetime.utcnow(), WritePrecision.NS)
+              send2influx(gps_err_msg4)
               return True
             else:
-              gps_err = 4 # valami int vagy string amit a grafana feldogoz hibaüzenetként
-              gps_err_msg = Point("GPS_Error") \
+              gps_err4 = 1 # valami int vagy string amit a grafana feldogoz hibaüzenetként
+              gps_err_msg4 = Point("GPS_Precison_Error") \
                       .tag("sensor", "sparkfun_ublox_NEO-M9N") \
-                      .field("Error_message", gps_err) \
+                      .field("Error_message", gps_err4) \
                       .time(datetime.utcnow(), WritePrecision.NS)
-              send2influx(gps_err_msg)
+              send2influx(gps_err_msg4)
               return False
     time.sleep(1)
 
@@ -71,33 +76,54 @@ def run():
     try:
         while True:
             try:
+                gps_err1 = 0 # Communication OK with GPS module
+                gps_err_msg1 = Point("GPS_Comm_Error") \
+                  .tag("sensor", "sparkfun_ublox_NEO-M9N") \
+                  .field("Error_message", gps_err1) \
+                  .time(datetime.utcnow(), WritePrecision.NS)
+                send2influx(gps_err_msg1)
+
                 geo = gps.geo_coords()
 
                 if geo.lon == 0.0 and geo.lat == 0.0:
-                    gps_err = 2 # GPS pozicio 0, valoszinuleg nincs GPS jel, nezd meg a kek PPS LED vilagit-e
-                    gps_err_msg = Point("GPS_Error") \
+                    gps_err2 = 1 # GPS pozicio 0, valoszinuleg nincs GPS jel, nezd meg a kek PPS LED vilagit-e
+                    gps_err_msg2 = Point("GPS_Position_Error") \
                       .tag("sensor", "sparkfun_ublox_NEO-M9N") \
-                      .field("Error_message", gps_err) \
+                      .field("Error_message", gps_err2) \
                       .time(datetime.utcnow(), WritePrecision.NS)
-                    send2influx(gps_err_msg)
+                    send2influx(gps_err_msg2)
+                else:
+                    gps_err2 = 0 # van GPS jel
+                    gps_err_msg2 = Point("GPS_Position_Error") \
+                      .tag("sensor", "sparkfun_ublox_NEO-M9N") \
+                      .field("Error_message", gps_err2) \
+                      .time(datetime.utcnow(), WritePrecision.NS)
+                    send2influx(gps_err_msg2)
                 
                 if geo.lon != 0.0 and geo.lat != 0.0 and geo.headMot == 0.0:
-                    gps_err = 3 # Van GPS jel, de nem halad a hajo:OOO
-                    gps_err_msg = Point("GPS_Error") \
+                    gps_err3 = 1 # Van GPS jel, de nem halad a hajo:OOO
+                    gps_err_msg3 = Point("GPS_Motion_Error") \
                       .tag("sensor", "sparkfun_ublox_NEO-M9N") \
-                      .field("Error_message", gps_err) \
+                      .field("Error_message", gps_err3) \
                       .time(datetime.utcnow(), WritePrecision.NS)
-                    send2influx(gps_err_msg)
+                    send2influx(gps_err_msg3)
+                else:
+                    gps_err3 = 0 # Van GPS jel, de nem halad a hajo:OOO
+                    gps_err_msg3 = Point("GPS_Motion_Error") \
+                      .tag("sensor", "sparkfun_ublox_NEO-M9N") \
+                      .field("Error_message", gps_err3) \
+                      .time(datetime.utcnow(), WritePrecision.NS)
+                    send2influx(gps_err_msg3)
                 
-                gps_coords = Point("GPS coordinates") \
-                  .tag("sensor", "sparkfun ublox NEO-M9N") \
+                gps_coords = Point("GPS_coordinates") \
+                  .tag("sensor", "sparkfun_ublox_NEO-M9N") \
                   .field("Longitude", geo.lon) \
                   .field("Latitude", geo.lat) \
                   .time(datetime.utcnow(), WritePrecision.NS)
                 
                 heading = Point("heading") \
-                  .tag("sensor", "sparkfun ublox NEO-M9N") \
-                  .field("Heading of Motion", geo.headMot) \
+                  .tag("sensor", "sparkfun_ublox_NEO-M9N") \
+                  .field("Heading_of_Motion", geo.headMot) \
                   .time(datetime.utcnow(), WritePrecision.NS)
                 
                 # # lehet külön kiküldés javítana a heading problémán???
@@ -106,16 +132,15 @@ def run():
                 # send2influx(lana_gps)
 
                 send2influx(gps_coords)
-                send2influx(heading)
-                    
+                send2influx(heading)      
                     
             except (ValueError, IOError) as err:
-                gps_err = 1 # Communication Error with GPS module
-                gps_err_msg = Point("GPS_Error") \
+                gps_err1 = 1 # Communication Error with GPS module
+                gps_err_msg1 = Point("GPS_Comm_Error") \
                   .tag("sensor", "sparkfun_ublox_NEO-M9N") \
-                  .field("Error_message", gps_err) \
+                  .field("Error_message", gps_err1) \
                   .time(datetime.utcnow(), WritePrecision.NS)
-                send2influx(gps_err_msg)
+                send2influx(gps_err_msg1)
 
         time.sleep(0.50) # biztos ami sicher      
 
@@ -125,5 +150,5 @@ def run():
 
 if __name__ == '__main__':
   # if six GPS signals are in 0.02 range it enables to run the 'run' function
-    while gps_verify() == True: # folyamatosan chekkel (remélem)
+    while gps_verify() == True: # folyamatosan chekkel (remelem)
         run()
