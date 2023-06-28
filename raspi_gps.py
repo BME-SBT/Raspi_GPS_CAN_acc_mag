@@ -110,6 +110,36 @@ def run():
                   .field("Heading_of_Motion", geo.headMot) \
                   .time(datetime.utcnow(), WritePrecision.NS)
                 
+                # SIV = Point("SIV") \
+                #   .tag("sensor", "sparkfun_ublox_NEO-M9N") \
+                #   .field("SIV", geo.SIV) \
+                #   .time(datetime.utcnow(), WritePrecision.NS)
+
+                #speed = gps.get_ground_speed() * 1.852
+                
+                veh = gps.veh_attitude()
+                print("Roll: ", veh.roll)
+                print("Pitch: ", veh.pitch)
+                print("Heading: ", veh.heading)
+                print("Roll Acceleration: ", veh.accRoll)
+                print("Pitch Acceleration: ", veh.accPitch)
+                print("Heading Acceleration: ", veh.accHeading)
+                
+        #                 head_acc = nav_payload.headAcc
+        # pos_dop = nav_payload.pDOP
+        # head_veh = nav_payload.headVeh
+        # mag_dec = nav_payload.magDec
+        # mag_acc = nav_payload.magAcc
+
+        #         longitude = nav_payload.lon
+        # lon_Hp = nav_payload.lonHp
+        # latitude = nav_payload.lat
+        # lat_Hp = nav_payload.latHp
+        # height_Hp = nav_payload.heightHp
+        # height_sea = nav_payload.hMSLHp
+        # horiz_acc = nav_payload.hAcc
+        # vert_acc = nav_payload.vAcc
+                
                 # # lehet külön kiküldés javítana a heading problémán???
                 # lana_gps = []
                 # lana_gps.append([gps_coords, heading])
@@ -126,7 +156,7 @@ def run():
                   .time(datetime.utcnow(), WritePrecision.NS)
                 send2influx(gps_err_msg1)
                 
-        time.sleep(0.50) # biztos ami sicher
+        time.sleep(1) # 1 sec
 
     finally:
         port.close()
