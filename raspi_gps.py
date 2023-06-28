@@ -119,6 +119,7 @@ def run():
                 print("anyadat")
 
                 veh = gps.veh_attitude()
+                print("anyadat2")
                 print("Roll: ", veh.roll)
                 # print("Pitch: ", veh.pitch)
                 # print("Heading: ", veh.heading)
