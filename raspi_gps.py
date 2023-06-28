@@ -63,13 +63,19 @@ def run():
 
                 geo = gps.geo_coords()
                 
-                if geo.lon == 0.0 and geo.lat == 0.0:
+                if geo.lon == 0.0 and geo.lat == 0.0 and geo.headMot == 0.0:
                     gps_err2 = 1 # GPS pozicio 0, valoszinuleg nincs GPS jel, nezd meg a kek PPS LED vilagit-e
                     gps_err_msg2 = Point("GPS_Position_Error") \
                       .tag("sensor", "sparkfun_ublox_NEO-M9N") \
                       .field("Error_message", gps_err2) \
                       .time(datetime.utcnow(), WritePrecision.NS)
                     send2influx(gps_err_msg2)
+                    gps_err3 = 1 # nem halad a hajo:OOO
+                    gps_err_msg3 = Point("GPS_Motion_Error") \
+                      .tag("sensor", "sparkfun_ublox_NEO-M9N") \
+                      .field("Error_message", gps_err3) \
+                      .time(datetime.utcnow(), WritePrecision.NS)
+                    send2influx(gps_err_msg3)
                 else:
                     gps_err2 = 0 # van GPS jel
                     gps_err_msg2 = Point("GPS_Position_Error") \
@@ -85,7 +91,7 @@ def run():
                       .field("Error_message", gps_err3) \
                       .time(datetime.utcnow(), WritePrecision.NS)
                     send2influx(gps_err_msg3)
-                else:
+                elif geo.lon != 0.0 and geo.lat != 0.0 and geo.headMot != 0.0:
                     gps_err3 = 0 # Van GPS jel, halad a hajo
                     gps_err_msg3 = Point("GPS_Motion_Error") \
                       .tag("sensor", "sparkfun_ublox_NEO-M9N") \
