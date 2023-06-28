@@ -116,7 +116,7 @@ def run():
                 #   .time(datetime.utcnow(), WritePrecision.NS)
 
                 #speed = gps.get_ground_speed() * 1.852
-                
+                print("anyadat")
                 veh = gps.veh_attitude()
                 print("Roll: ", veh.roll)
                 print("Pitch: ", veh.pitch)
