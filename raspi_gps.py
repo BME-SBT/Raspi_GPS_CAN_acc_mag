@@ -46,7 +46,7 @@ urlfile.close()
 
 # sends given data to influxDB which is set in function
 def send2influx(msg2send):
-    with InfluxDBClient(url=influx_url, token=lana_token, org=org) as client:
+    with InfluxDBClient(url=influx_url, token=lana_token, org=org, timeout=30_000) as client:
         write_api = client.write_api(write_options=SYNCHRONOUS)
         write_api.write(bucket_name, org, msg2send)
 
