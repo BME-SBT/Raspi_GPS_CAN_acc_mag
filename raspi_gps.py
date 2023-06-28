@@ -118,9 +118,9 @@ def run():
                 #speed = gps.get_ground_speed() * 1.852
                 print("anyadat")
 
-                #veh = gps.veh_attitude()
+                vveh = gps.veh_attitude()
                 print("anyadat2")
-                print("Roll: ", gps.veh_attitude().roll)
+                print("Roll: ", vveh.att_roll)
                 print("anyadat3")
                 # print("Pitch: ", veh.pitch)
                 # print("Heading: ", veh.heading)
