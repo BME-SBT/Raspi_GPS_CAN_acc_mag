@@ -117,14 +117,20 @@ def run():
 
                 #speed = gps.get_ground_speed() * 1.852
                 print("anyadat")
-                
-                # veh = gps.veh_attitude()
-                # print("Roll: ", veh.roll)
+
+                veh = gps.veh_attitude()
+                print("Roll: ", veh.roll)
                 # print("Pitch: ", veh.pitch)
                 # print("Heading: ", veh.heading)
                 # print("Roll Acceleration: ", veh.accRoll)
                 # print("Pitch Acceleration: ", veh.accPitch)
                 # print("Heading Acceleration: ", veh.accHeading)
+
+                # att_roll = nav_payload.roll
+                # att_pitch = nav_payload.pitch
+                # att_head = nav_payload.heading
+                # att_roll_acc = nav_payload.accPitch
+                # att_head_acc = nav_payload.accHeading
                 
                 #                 head_acc = nav_payload.headAcc
                 # pos_dop = nav_payload.pDOP
