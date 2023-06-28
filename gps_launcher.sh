@@ -3,6 +3,7 @@
 
 sudo python /home/pi/scripts/raspi_gps.py
 
+#root@bmraspizero:/etc/systemd/system# cat GPS_launcher.service
 # [Unit]
 # Description=GPS launcher
 # After=network.target
