@@ -164,6 +164,12 @@ def run():
 
                 gps_time = gps.date_time()
                 global i
+                global lat_1
+                global lon_1
+                global lat_2
+                global lon_2
+                global timestmp1
+                global timestmp2
                 while i < 3:
                     if i == 1:
                       lat_1 = geo.lat
