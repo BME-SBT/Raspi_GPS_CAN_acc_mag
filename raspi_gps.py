@@ -43,7 +43,7 @@ def send2influx(msg2send):
         write_api = client.write_api(write_options=SYNCHRONOUS)
         write_api.write(bucket_name, org, msg2send)
 
-def distance_on_geoid(lat1, lon1, lat2, lon2):
+def speed_on_geoid(lat1, lon1, lat2, lon2, tmstmp1, tmstmp2):
       # Convert degrees to radians
       lat1 = lat1 * math.pi / 180.0
       lon1 = lon1 * math.pi / 180.0
@@ -65,29 +65,40 @@ def distance_on_geoid(lat1, lon1, lat2, lon2):
       dot = (x1 * x2 + y1 * y2 + z1 * z2)
       cos_theta = dot / (r * r)
       theta = math.acos(cos_theta)
-      # Distance in Metres: r * theta
-      return r * theta 
-
-gps_time = gps.date_time()
-print("UTC Time {}:{}:{}".format(gps_time.hour, gps_time.min, gps_time.sec))
-print(gps_time.sec)
+      # Distance in Metres
+      dist = r * theta
+      # timestamp is in milliseconds
+      time_s = (tmstmp2 - tmstmp1) / 1000.0
+      speed_mps = dist / time_s
+      speed_kph = (speed_mps * 3600.0) / 1000.0
+      return speed_kph
 
 i = 1
 lat_1 = 1
 lon_1 = 1
 lat_2 = 2
 lon_2 = 2
+timestmp1 = 1
+timestmp2 = 2
+
+def setNsend (msg_type,msg_name,value):
+  influxmsg = Point(msg_type) \
+    .tag("sensor", "sparkfun_ublox_NEO-M9N") \
+    .field(msg_name, value) \
+    .time(datetime.utcnow(), WritePrecision.NS)
+  send2influx(influxmsg)
 
 def run():
     try:
         while True:
             try:
                 gps_err1 = 0 # Communication OK with GPS module
-                gps_err_msg1 = Point("GPS_Comm_Error") \
-                  .tag("sensor", "sparkfun_ublox_NEO-M9N") \
-                  .field("Error_message", gps_err1) \
-                  .time(datetime.utcnow(), WritePrecision.NS)
-                send2influx(gps_err_msg1)
+                setNsend("GPS_Comm_Error", "Error_message", gps_err1)
+                # gps_err_msg1 = Point("GPS_Comm_Error") \
+                #   .tag("sensor", "sparkfun_ublox_NEO-M9N") \
+                #   .field("Error_message", gps_err1) \
+                #   .time(datetime.utcnow(), WritePrecision.NS)
+                # send2influx(gps_err_msg1)
 
                 geo = gps.geo_coords()
                 
@@ -132,11 +143,13 @@ def run():
                   .field("Longitude", geo.lon) \
                   .field("Latitude", geo.lat) \
                   .time(datetime.utcnow(), WritePrecision.NS)
+                send2influx(gps_coords)
                 
                 heading = Point("heading") \
                   .tag("sensor", "sparkfun_ublox_NEO-M9N") \
                   .field("Heading_of_Motion", geo.headMot) \
                   .time(datetime.utcnow(), WritePrecision.NS)
+                send2influx(heading)
 
                 # print("anyadat")
                 # veh = gps.veh_attitude()
@@ -149,25 +162,34 @@ def run():
                 # print("Pitch Acceleration: ", veh.accPitch)
                 # print("Heading Acceleration: ", veh.accHeading)
 
+                gps_time = gps.date_time()
+
                 while i < 3:
                     if i == 1:
                       lat_1 = geo.lat
                       lon_1 = geo.lon
+                      timestmp1 = gps_time.sec
+                      print("act i: ", i, "lat_1: ", lat_1, "lon_1: ", lon_1, "timestmp1: ", timestmp1)
                       i += 1
+                      print("incremented i: ", i)
                       continue
                     if i == 2:
                       lat_2 = geo.lat
                       lon_2 = geo.lon
+                      timestmp2 = gps_time.sec
+                      print("i before reset: ", i)
                       i = 1
+                      print("act i: ", i, "lat_2: ", lat_2, "lon_2: ", lon_2, "timestmp2: ", timestmp2)
 
-                dist = distance_on_geoid(lat_1, lon_1, lat_2, lon_2)
-                # timestamp is in milliseconds
-                time_s = (p2.timestamp - p1.timestamp) / 1000.0
-                speed_mps = dist / time_s
-                speed_kph = (speed_mps * 3600.0) / 1000.0
+                gps_speed = speed_on_geoid(lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2)
+                print("lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2: ", lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2)
+                print(gps_speed)
 
-                send2influx(gps_coords)
-                send2influx(heading)                                    
+                GPSspeed = Point("GPS_speed") \
+                  .tag("sensor", "sparkfun_ublox_NEO-M9N") \
+                  .field("Speed", gps_speed) \
+                  .time(datetime.utcnow(), WritePrecision.NS)
+                send2influx(GPSspeed)     
                     
             except (ValueError, IOError) as err:
                 gps_err1 = 1 # Communication Error with GPS module
@@ -177,7 +199,7 @@ def run():
                   .time(datetime.utcnow(), WritePrecision.NS)
                 send2influx(gps_err_msg1)
                 
-        time.sleep(0.50) # 0.5 sec
+        time.sleep(1) # 1 sec
 
     finally:
         port.close()
