@@ -187,6 +187,7 @@ def run():
                       print("i before reset: ", i)
                       i = 1
                       print("act i: ", i, "lat_2: ", lat_2, "lon_2: ", lon_2, "timestmp2: ", timestmp2)
+                    continue
 
                 gps_speed = speed_on_geoid(lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2)
                 print("lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2: ", lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2)
