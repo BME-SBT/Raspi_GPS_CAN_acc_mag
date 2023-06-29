@@ -195,7 +195,9 @@ def run():
                   .tag("sensor", "sparkfun_ublox_NEO-M9N") \
                   .field("Speed", gps_speed) \
                   .time(datetime.utcnow(), WritePrecision.NS)
-                send2influx(GPSspeed)     
+                send2influx(GPSspeed) 
+
+                time.sleep(1) # 1 sec  
                     
             except (ValueError, IOError) as err:
                 gps_err1 = 1 # Communication Error with GPS module
