@@ -171,7 +171,7 @@ def run():
                 global lon_2
                 global timestmp1
                 global timestmp2
-                while i < 3:
+                if i < 3:
                     if i == 1:
                       lat_1 = geo.lat
                       lon_1 = geo.lon
