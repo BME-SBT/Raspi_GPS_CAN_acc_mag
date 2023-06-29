@@ -15,6 +15,7 @@ import serial
 from datetime import datetime
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
+import math
 
 import pathlib
 scriptpath = pathlib.Path(__file__).parent.resolve()
@@ -24,16 +25,8 @@ scriptpath = pathlib.Path(__file__).parent.resolve()
 port = serial.Serial('/dev/ttyGPS', baudrate=38400, timeout=1) # change default:ttyACM0 if neccessary (to the correct port: ttyGPS)
 gps = UbloxGps(port)
 
-# # ha nem lenne jó a kiküldéskor írt megoldás
-# import time # lehet nem kell
-# utcdate = datetime.datetime.utcnow()
-# timestamp = utcdate + datetime.timedelta(hours=2) #ez igy joooo?
-# vagy lehet import pytz-vel is
-
-# Sets the variables of the influxDB (You can generate an API token from the "API Tokens Tab" in the UI)
-#token = "" # lana_token
+# Sets the variables of the influxDB (You can generate an API token from the "API Tokens Tab" in the GUI)
 org = "sbt"
-#bucket = "lana" # database
 bucketfile = open(scriptpath/".bucket_name","r") # database name
 bucket_name = str(bucketfile.read())
 bucketfile.close()
@@ -49,6 +42,41 @@ def send2influx(msg2send):
     with InfluxDBClient(url=influx_url, token=lana_token, org=org, timeout=30_000) as client:
         write_api = client.write_api(write_options=SYNCHRONOUS)
         write_api.write(bucket_name, org, msg2send)
+
+def distance_on_geoid(lat1, lon1, lat2, lon2):
+      # Convert degrees to radians
+      lat1 = lat1 * math.pi / 180.0
+      lon1 = lon1 * math.pi / 180.0
+      lat2 = lat2 * math.pi / 180.0
+      lon2 = lon2 * math.pi / 180.0
+      # radius of earth in metres
+      r = 6378100
+      # P
+      rho1 = r * math.cos(lat1)
+      z1 = r * math.sin(lat1)
+      x1 = rho1 * math.cos(lon1)
+      y1 = rho1 * math.sin(lon1)
+      # Q
+      rho2 = r * math.cos(lat2)
+      z2 = r * math.sin(lat2)
+      x2 = rho2 * math.cos(lon2)
+      y2 = rho2 * math.sin(lon2)
+      # Dot product
+      dot = (x1 * x2 + y1 * y2 + z1 * z2)
+      cos_theta = dot / (r * r)
+      theta = math.acos(cos_theta)
+      # Distance in Metres: r * theta
+      return r * theta 
+
+gps_time = gps.date_time()
+print("UTC Time {}:{}:{}".format(gps_time.hour, gps_time.min, gps_time.sec))
+print(gps_time.sec)
+
+i = 1
+lat_1 = 1
+lon_1 = 1
+lat_2 = 2
+lon_2 = 2
 
 def run():
     try:
@@ -109,50 +137,34 @@ def run():
                   .tag("sensor", "sparkfun_ublox_NEO-M9N") \
                   .field("Heading_of_Motion", geo.headMot) \
                   .time(datetime.utcnow(), WritePrecision.NS)
-                
-                # SIV = Point("SIV") \
-                #   .tag("sensor", "sparkfun_ublox_NEO-M9N") \
-                #   .field("SIV", geo.SIV) \
-                #   .time(datetime.utcnow(), WritePrecision.NS)
 
-                #speed = gps.get_ground_speed() * 1.852
-                print("anyadat")
-
-                vveh = gps.veh_attitude()
-                print("anyadat2")
-                print("Roll: ", vveh.att_roll)
-                print("anyadat3")
+                # print("anyadat")
+                # veh = gps.veh_attitude()
+                # print("a kurva anyadat")
+                # print("Roll: ", veh.att_roll)
+                # print("a jo edes budos kurva anyadat")
                 # print("Pitch: ", veh.pitch)
                 # print("Heading: ", veh.heading)
                 # print("Roll Acceleration: ", veh.accRoll)
                 # print("Pitch Acceleration: ", veh.accPitch)
                 # print("Heading Acceleration: ", veh.accHeading)
 
-                # att_roll = nav_payload.roll
-                # att_pitch = nav_payload.pitch
-                # att_head = nav_payload.heading
-                # att_roll_acc = nav_payload.accPitch
-                # att_head_acc = nav_payload.accHeading
-                
-                #                 head_acc = nav_payload.headAcc
-                # pos_dop = nav_payload.pDOP
-                # head_veh = nav_payload.headVeh
-                # mag_dec = nav_payload.magDec
-                # mag_acc = nav_payload.magAcc
+                while i < 3:
+                    if i == 1:
+                      lat_1 = geo.lat
+                      lon_1 = geo.lon
+                      i += 1
+                      continue
+                    if i == 2:
+                      lat_2 = geo.lat
+                      lon_2 = geo.lon
+                      i = 1
 
-                #         longitude = nav_payload.lon
-                # lon_Hp = nav_payload.lonHp
-                # latitude = nav_payload.lat
-                # lat_Hp = nav_payload.latHp
-                # height_Hp = nav_payload.heightHp
-                # height_sea = nav_payload.hMSLHp
-                # horiz_acc = nav_payload.hAcc
-                # vert_acc = nav_payload.vAcc
-                
-                # # lehet külön kiküldés javítana a heading problémán???
-                # lana_gps = []
-                # lana_gps.append([gps_coords, heading])
-                # send2influx(lana_gps)
+                dist = distance_on_geoid(lat_1, lon_1, lat_2, lon_2)
+                # timestamp is in milliseconds
+                time_s = (p2.timestamp - p1.timestamp) / 1000.0
+                speed_mps = dist / time_s
+                speed_kph = (speed_mps * 3600.0) / 1000.0
 
                 send2influx(gps_coords)
                 send2influx(heading)                                    
@@ -165,7 +177,7 @@ def run():
                   .time(datetime.utcnow(), WritePrecision.NS)
                 send2influx(gps_err_msg1)
                 
-        time.sleep(0.50) # 1 sec
+        time.sleep(0.50) # 0.5 sec
 
     finally:
         port.close()
