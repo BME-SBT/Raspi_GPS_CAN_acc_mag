@@ -146,20 +146,20 @@ def run():
                       lat_1 = geo.lat
                       lon_1 = geo.lon
                       timestmp1 = gps_time.sec
-                      print("act i: ", i, "lat_1: ", lat_1, "lon_1: ", lon_1, "timestmp1: ", timestmp1)
+                      #print("act i: ", i, "lat_1: ", lat_1, "lon_1: ", lon_1, "timestmp1: ", timestmp1)
                       i += 1
-                      print("incremented i: ", i)
+                      #print("incremented i: ", i)
                     elif i == 2:
                       lat_2 = geo.lat
                       lon_2 = geo.lon
                       timestmp2 = gps_time.sec
-                      print("act i: ", i, "lat_2: ", lat_2, "lon_2: ", lon_2, "timestmp2: ", timestmp2)
+                      #print("act i: ", i, "lat_2: ", lat_2, "lon_2: ", lon_2, "timestmp2: ", timestmp2)
                       i = 1
-                      print("resetted i: ", i)
+                      #print("resetted i: ", i)
 
                 gps_speed = speed_on_geoid(lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2)
-                print("lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2: ", lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2)
-                print("gps speed",gps_speed)
+                #print("lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2: ", lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2)
+                #print("gps speed",gps_speed)
 
                 setNsend("GPS_speed", "Speed", gps_speed) 
                     
@@ -171,7 +171,7 @@ def run():
                   .time(datetime.utcnow(), WritePrecision.NS)
                 send2influx(gps_err_msg1)
                 
-        #time.sleep(0.10) # sec
+        time.sleep(0.50) # sec
 
     finally:
         port.close()
