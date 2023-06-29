@@ -73,13 +73,13 @@ def speed_on_geoid(lat1, lon1, lat2, lon2, tmstmp1, tmstmp2):
       speed_kph = (speed_mps * 3600.0) / 1000.0
       return speed_kph
 
-i = 1
-lat_1 = 1
-lon_1 = 1
-lat_2 = 2
-lon_2 = 2
-timestmp1 = 1
-timestmp2 = 2
+# i = 1
+# lat_1 = 1
+# lon_1 = 1
+# lat_2 = 2
+# lon_2 = 2
+# timestmp1 = 1
+# timestmp2 = 2
 
 def setNsend (msg_type,msg_name,value):
   influxmsg = Point(msg_type) \
