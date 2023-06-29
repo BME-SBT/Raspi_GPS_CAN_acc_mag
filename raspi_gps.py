@@ -207,7 +207,7 @@ def run():
                   .time(datetime.utcnow(), WritePrecision.NS)
                 send2influx(gps_err_msg1)
                 
-        time.sleep(1) # 1 sec
+        time.sleep(0.50) # 1 sec
 
     finally:
         port.close()
