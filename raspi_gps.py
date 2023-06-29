@@ -189,7 +189,7 @@ def run():
 
                 gps_speed = speed_on_geoid(lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2)
                 print("lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2: ", lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2)
-                print(gps_speed)
+                print("gps speed",gps_speed)
 
                 GPSspeed = Point("GPS_speed") \
                   .tag("sensor", "sparkfun_ublox_NEO-M9N") \
@@ -197,7 +197,7 @@ def run():
                   .time(datetime.utcnow(), WritePrecision.NS)
                 send2influx(GPSspeed) 
 
-                time.sleep(1) # 1 sec  
+                #time.sleep(1) # 1 sec  
                     
             except (ValueError, IOError) as err:
                 gps_err1 = 1 # Communication Error with GPS module
