@@ -12,6 +12,7 @@
 
 from ublox_gps import UbloxGps
 import serial
+import time
 from datetime import datetime
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
