@@ -165,13 +165,9 @@ def run():
                     
             except (ValueError, IOError) as err:
                 gps_err1 = 1 # Communication Error with GPS module
-                gps_err_msg1 = Point("GPS_Comm_Error") \
-                  .tag("sensor", "sparkfun_ublox_NEO-M9N") \
-                  .field("Error_message", gps_err1) \
-                  .time(datetime.utcnow(), WritePrecision.NS)
-                send2influx(gps_err_msg1)
+                setNsend("GPS_Comm_Error", "Error_message", gps_err1)
                 
-        time.sleep(0.50) # sec
+        time.sleep(1) # sec
 
     finally:
         port.close()
