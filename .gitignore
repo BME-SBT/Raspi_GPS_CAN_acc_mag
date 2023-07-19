@@ -1,5 +1,5 @@
-.bucket_name
-.influx_url
 .lana_token
-influxvars.txt
+.influx_url
+.bucket_name
 .DS_Store
+influxvars.txt
