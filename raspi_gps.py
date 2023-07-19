@@ -2,11 +2,11 @@
 
 # BME Solar Boat Team 2022
 # Boat name: Lana
-# Responsible for code: BM
+# Responsible for code: bm971
 
 # on Raspberry PI 4
 # Sends GPS coordinates and heading of motion from GPS module to influxDB
-# GPS module: u-blox NEO-M9N
+# GPS module: Sparkfun u-blox NEO-M9N
 # Connected to Raspberry PI via serial port
 
 
@@ -16,9 +16,12 @@ from datetime import datetime
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
 
+import pathlib
+scriptpath = pathlib.Path(__file__).parent.resolve()
+
 # sets the connection with GPS module
 # to check which serial port is connected to GPS module run: ls -la /dev/serial/by-id 
-port = serial.Serial('/dev/ttyACM0', baudrate=38400, timeout=1) # change ttyACM0 if neccessary (to the correct port)
+port = serial.Serial('/dev/ttyGPS', baudrate=38400, timeout=1) # change default:ttyACM0 if neccessary (to the correct port: ttyGPS)
 gps = UbloxGps(port)
 
 # # ha nem lenne jó a kiküldéskor írt megoldás
@@ -28,76 +31,105 @@ gps = UbloxGps(port)
 # vagy lehet import pytz-vel is
 
 # Sets the variables of the influxDB (You can generate an API token from the "API Tokens Tab" in the UI)
-token = "" # lana_token
+#token = "" # lana_token
 org = "sbt"
-bucket = "lana" # database
+#bucket = "lana" # database
+bucketfile = open(scriptpath/".bucket_name","r") # database name
+bucket_name = str(bucketfile.read())
+bucketfile.close()
+tokenfile = open(scriptpath/".lana_token","r")
+lana_token = str(tokenfile.read())
+tokenfile.close()
+urlfile = open(scriptpath/".influx_url","r")
+influx_url = str(urlfile.read())
+urlfile.close()
 
 # sends given data to influxDB which is set in function
 def send2influx(msg2send):
-    with InfluxDBClient(url=http://influx.solarboatteam.hu:8086, token=token, org=org) as client:
+    with InfluxDBClient(url=influx_url, token=lana_token, org=org, timeout=30_000) as client:
         write_api = client.write_api(write_options=SYNCHRONOUS)
-        write_api.write(bucket, org, msg2send)
-#     client.close() # lehet fölösleges
+        write_api.write(bucket_name, org, msg2send)
 
 def run():
-
     try:
-#         print("Listening for UBX Messages") # majd ki kell törölni
         while True:
             try:
+                gps_err1 = 0 # Communication OK with GPS module
+                gps_err_msg1 = Point("GPS_Comm_Error") \
+                  .tag("sensor", "sparkfun_ublox_NEO-M9N") \
+                  .field("Error_message", gps_err1) \
+                  .time(datetime.utcnow(), WritePrecision.NS)
+                send2influx(gps_err_msg1)
+
                 geo = gps.geo_coords()
-#                 print("Longitude: ", geo.lon) # majd ki kell törölni
-#                 print("Latitude: ", geo.lat)  # majd ki kell törölni
-#                 print("Heading of Motion: ", geo.headMot) # majd ki kell törölni
                 
-                if geo.lon == 0.0 and geo.lat == 0.0:
-                    gps_err = "GPS pozicio 0, valoszinuleg nincs GPS jel, nezd meg a kek PPS LED vilagit-e"
-#                    print("GPS pozicio 0, valoszinuleg nincs GPS jel, nezd meg a kek PPS LED vilagit-e")
-                    gps_err_msg = Point("GPS Error") \
-                      .tag("sensor", "sparkfun ublox NEO-M9N") \
-                      .field("Error message", gps_err) \
+                if geo.lon == 0.0 and geo.lat == 0.0 and geo.headMot == 0.0:
+                    gps_err2 = 1 # GPS pozicio 0, valoszinuleg nincs GPS jel, nezd meg a kek PPS LED vilagit-e
+                    gps_err_msg2 = Point("GPS_Position_Error") \
+                      .tag("sensor", "sparkfun_ublox_NEO-M9N") \
+                      .field("Error_message", gps_err2) \
                       .time(datetime.utcnow(), WritePrecision.NS)
-                    send2influx(gps_err_msg)
+                    send2influx(gps_err_msg2)
+                    gps_err3 = 1 # nem halad a hajo:OOO
+                    gps_err_msg3 = Point("GPS_Motion_Error") \
+                      .tag("sensor", "sparkfun_ublox_NEO-M9N") \
+                      .field("Error_message", gps_err3) \
+                      .time(datetime.utcnow(), WritePrecision.NS)
+                    send2influx(gps_err_msg3)
+                else:
+                    gps_err2 = 0 # van GPS jel
+                    gps_err_msg2 = Point("GPS_Position_Error") \
+                      .tag("sensor", "sparkfun_ublox_NEO-M9N") \
+                      .field("Error_message", gps_err2) \
+                      .time(datetime.utcnow(), WritePrecision.NS)
+                    send2influx(gps_err_msg2)
                 
                 if geo.lon != 0.0 and geo.lat != 0.0 and geo.headMot == 0.0:
-                    gps_err = "Van GPS jel, de nem halad a hajo:OOO"
-#                    print("Van GPS jel, de nem halad a hajo:OOO")
-                    gps_err_msg = Point("GPS Error") \
-                      .tag("sensor", "sparkfun ublox NEO-M9N") \
-                      .field("Error message", gps_err) \
+                    gps_err3 = 1 # Van GPS jel, de nem halad a hajo:OOO
+                    gps_err_msg3 = Point("GPS_Motion_Error") \
+                      .tag("sensor", "sparkfun_ublox_NEO-M9N") \
+                      .field("Error_message", gps_err3) \
                       .time(datetime.utcnow(), WritePrecision.NS)
-                    send2influx(gps_err_msg)
+                    send2influx(gps_err_msg3)
+                elif geo.lon != 0.0 and geo.lat != 0.0 and geo.headMot != 0.0:
+                    gps_err3 = 0 # Van GPS jel, halad a hajo
+                    gps_err_msg3 = Point("GPS_Motion_Error") \
+                      .tag("sensor", "sparkfun_ublox_NEO-M9N") \
+                      .field("Error_message", gps_err3) \
+                      .time(datetime.utcnow(), WritePrecision.NS)
+                    send2influx(gps_err_msg3)
                 
-                
-                gps_coords = Point("GPS coordinates") \
-                  .tag("sensor", "sparkfun ublox NEO-M9N") \
+                gps_coords = Point("GPS_coordinates") \
+                  .tag("sensor", "sparkfun_ublox_NEO-M9N") \
                   .field("Longitude", geo.lon) \
                   .field("Latitude", geo.lat) \
                   .time(datetime.utcnow(), WritePrecision.NS)
                 
                 heading = Point("heading") \
-                  .tag("sensor", "sparkfun ublox NEO-M9N") \
-                  .field("Heading of Motion", geo.headMot) \
+                  .tag("sensor", "sparkfun_ublox_NEO-M9N") \
+                  .field("Heading_of_Motion", geo.headMot) \
                   .time(datetime.utcnow(), WritePrecision.NS)
                 
-                lana_gps = []
-                lana_gps.append([gps_coords, heading])
-                
-                send2influx(lana_gps)
-                    
+                # # lehet külön kiküldés javítana a heading problémán???
+                # lana_gps = []
+                # lana_gps.append([gps_coords, heading])
+                # send2influx(lana_gps)
+
+                send2influx(gps_coords)
+                send2influx(heading)                                    
                     
             except (ValueError, IOError) as err:
-#                print(err) # majd ki kell törölni
-                com_err_msg = Point("GPS module comm Error") \
-                  .tag("sensor", "sparkfun ublox NEO-M9N") \
-                  .field("Communication Error message", err) \
+                gps_err1 = 1 # Communication Error with GPS module
+                gps_err_msg1 = Point("GPS_Comm_Error") \
+                  .tag("sensor", "sparkfun_ublox_NEO-M9N") \
+                  .field("Error_message", gps_err1) \
                   .time(datetime.utcnow(), WritePrecision.NS)
-                send2influx(com_err_msg)
-                 
+                send2influx(gps_err_msg1)
+                
+        time.sleep(0.50) # biztos ami sicher
 
     finally:
         port.close()
-
 
 if __name__ == '__main__':
     run()
