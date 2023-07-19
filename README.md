@@ -4,9 +4,11 @@ Raspberry PI-hez csatlakoztatott GPS modul adatait küldi ki influxDB-be
 LÉtre kell hozni és kitölteni:
 influxvars.txt
 tartalma:
-<bucket_name>
-<influx_url>
-<inlfux_token>
+```
+bucket_name
+influx_url
+inlfux_token
+```
 
 Raspberry PI:
 OS: Raspberry PI OS Lite (64-bit) (headless)
