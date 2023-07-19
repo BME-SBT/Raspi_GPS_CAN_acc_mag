@@ -1,3 +1,5 @@
 .bucket_name
 .influx_url
 .lana_token
+influxvars.txt
+.DS_Store

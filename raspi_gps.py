@@ -34,7 +34,7 @@ bucket = "lana" # database
 
 # sends given data to influxDB which is set in function
 def send2influx(msg2send):
-    with InfluxDBClient(url=, token=token, org=org) as client:
+    with InfluxDBClient(url=http://influx.solarboatteam.hu:8086, token=token, org=org) as client:
         write_api = client.write_api(write_options=SYNCHRONOUS)
         write_api.write(bucket, org, msg2send)
 #     client.close() # lehet fölösleges
