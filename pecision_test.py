@@ -10,7 +10,7 @@ port = serial.Serial('/dev/ttyGPS', baudrate=38400, timeout=1)
 gps = UbloxGps(port)
 
 # Utolsó 10 GPS adat tárolására szolgáló lista
-last_10_coords = []
+last_10_coords = [[0.01,0.02],[3,4],[0.02,0.01],[0.01,0.01],[0.01,0.02],[0.01,0.02],[0.01,0.02],[0.01,0.02],[0.01,0.02],[0.01,0.02]]
 
 def run():
     while True:
@@ -21,7 +21,7 @@ def run():
             #lat = geo.lat
 
             # Az utolsó 10 adat tárolása
-            last_10_coords.append((geo.lon, geo.lat))
+            #last_10_coords.append((geo.lon, geo.lat))
             print("lon:",geo.lon)
             print("lat:",geo.lat)
             print("The 2D-Array is:")
