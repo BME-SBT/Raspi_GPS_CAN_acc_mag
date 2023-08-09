@@ -52,8 +52,8 @@ def run():
         except (KeyboardInterrupt, SystemExit):
             print("Kilépés...")
             break
-        except Exception as e:
-            print(f"Hiba történt: {e}")
+        # except Exception as e:
+        #     print(f"Hiba történt: {e}")
 
 if __name__ == '__main__':
     run()
