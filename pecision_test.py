@@ -34,12 +34,15 @@ def run():
             if len(last_10_coords) > 10:
                 last_10_coords.pop(0)
 
+            testlon = 0.01
+            testlat = 0.01
+
             # Ellenőrizzük, hogy van-e már legalább 10 adat
             if len(last_10_coords) >= 10:
                 # Ellenőrzés, hogy az utolsó 10 adat a megadott tartományon belül van-e
                 in_range = all(
-                    abs(last_10_coords[i][0] - geo.lon) <= 0.01 and
-                    abs(last_10_coords[i][1] - geo.lat) <= 0.01
+                    abs(last_10_coords[i][0] - testlon) <= 0.01 and
+                    abs(last_10_coords[i][1] - testlat) <= 0.01
                     for i in range(len(last_10_coords))
                 )
 
