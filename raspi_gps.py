@@ -155,10 +155,11 @@ def run():
                 #print("gps speed",gps_speed)
 
                 setNsend("GPS_speed", "Speed", gps_speed) 
+
+                print("Lefutott a try egyszer",datetime)
                     
             except (ValueError, IOError) as err:
-                gps_err1 = 1 # Communication Error with GPS module
-                setNsend("GPS_Comm_Error", "Error_message", gps_err1)
+                setNsend("GPS_Comm_Error", "Error_message", 1) # Communication Error with GPS module
                 
         time.sleep(1) # sec
 
