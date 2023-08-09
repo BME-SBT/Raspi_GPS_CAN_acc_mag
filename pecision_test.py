@@ -10,7 +10,9 @@ port = serial.Serial('/dev/ttyGPS', baudrate=38400, timeout=1)
 gps = UbloxGps(port)
 
 # Utolsó 10 GPS adat tárolására szolgáló lista
-last_10_coords = [[0.01,0.02],[0.02,0.01],[0.01,0.02],[0.01,0.01],[0.01,0.02],[0.01,0.02],[0.01,0.02],[0.01,0.02],[0.01,0.02],[0.01,0.02]]
+last_10_coords = []
+# TESTARRAY (comment out the original above if you want to use it)
+#last_10_coords = [[0.01,0.02],[0.02,0.01],[0.01,0.02],[0.01,0.01],[0.01,0.02],[0.01,0.02],[0.01,0.02],[0.01,0.02],[0.01,0.02],[0.01,0.02]]
 
 def run():
     while True:
@@ -34,15 +36,17 @@ def run():
             if len(last_10_coords) > 10:
                 last_10_coords.pop(0)
 
-            testlon = 0.01
-            testlat = 0.01
+            # uncomment if you want to use the TESTARRAY
+            #testlon = 0.01
+            #testlat = 0.01
 
             # Ellenőrizzük, hogy van-e már legalább 10 adat
             if len(last_10_coords) >= 10:
                 # Ellenőrzés, hogy az utolsó 10 adat a megadott tartományon belül van-e
+                # change geo.lon and geo.lat to testlon and testlat if you want to use the TESTARRAY
                 in_range = all(
-                    abs(last_10_coords[i][0] - testlon) <= 0.01 and
-                    abs(last_10_coords[i][1] - testlat) <= 0.01
+                    abs(last_10_coords[i][0] - geo.lon) <= 0.01 and 
+                    abs(last_10_coords[i][1] - geo.lat) <= 0.01
                     for i in range(len(last_10_coords))
                 )
 
