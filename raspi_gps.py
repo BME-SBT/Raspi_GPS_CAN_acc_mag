@@ -9,7 +9,6 @@
 # GPS module: Sparkfun u-blox NEO-M9N
 # Connected to Raspberry PI via serial port
 
-
 from ublox_gps import UbloxGps
 import serial
 import time
@@ -22,21 +21,15 @@ import pathlib
 scriptpath = pathlib.Path(__file__).parent.resolve()
 
 # sets the connection with GPS module
-# to check which serial port is connected to GPS module run: ls -la /dev/serial/by-id 
 port = serial.Serial('/dev/ttyGPS', baudrate=38400, timeout=1) # change default:ttyACM0 if neccessary (to the correct port: ttyGPS)
 gps = UbloxGps(port)
 
 # Sets the variables of the influxDB (You can generate an API token from the "API Tokens Tab" in the GUI)
 org = "sbt"
-bucketfile = open(scriptpath/".bucket_name","r") # database name
-bucket_name = str(bucketfile.read())
-bucketfile.close()
-tokenfile = open(scriptpath/".lana_token","r")
-lana_token = str(tokenfile.read())
-tokenfile.close()
-urlfile = open(scriptpath/".influx_url","r")
-influx_url = str(urlfile.read())
-urlfile.close()
+with open(scriptpath/'influxvars.txt', 'r') as f:
+    bucket_name = f.readline().strip()
+    influx_url = f.readline().strip()
+    lana_token = f.readline().strip()
 
 # sends given data to influxDB which is set in function
 def send2influx(msg2send):
@@ -126,7 +119,7 @@ def run():
                 # veh = gps.veh_attitude()
                 # print("a kurva anyadat")
                 # print("Roll: ", veh.att_roll)
-                # print("a jo edes budos kurva anyadat")
+                # print("a jo edes rohadt kurva anyadat")
                 # print("Pitch: ", veh.pitch)
                 # print("Heading: ", veh.heading)
                 # print("Roll Acceleration: ", veh.accRoll)
@@ -162,12 +155,13 @@ def run():
                 #print("gps speed",gps_speed)
 
                 setNsend("GPS_speed", "Speed", gps_speed) 
+
+                #print("Lefutott a try egyszer",datetime.now())
+
+                # time.sleep(1) # sec
                     
             except (ValueError, IOError) as err:
-                gps_err1 = 1 # Communication Error with GPS module
-                setNsend("GPS_Comm_Error", "Error_message", gps_err1)
-                
-        time.sleep(1) # sec
+                setNsend("GPS_Comm_Error", "Error_message", 1) # Communication Error with GPS module
 
     finally:
         port.close()
