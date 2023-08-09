@@ -22,6 +22,8 @@ def run():
 
             # Az utolsó 10 adat tárolása
             last_10_coords.append((geo.lon, geo.lat))
+            print("lon:",geo.lon)
+            print("lat:",geo.lat)
 
             # Csak az utolsó 10 adatot tároljuk
             if len(last_10_coords) > 10:
