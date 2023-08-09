@@ -24,6 +24,11 @@ def run():
             last_10_coords.append((geo.lon, geo.lat))
             print("lon:",geo.lon)
             print("lat:",geo.lat)
+            print("The 2D-Array is:")
+            for i in last_10_coords:
+                for j in i:
+                    print(j, end=" ")
+                print()
 
             # Csak az utolsó 10 adatot tároljuk
             if len(last_10_coords) > 10:
