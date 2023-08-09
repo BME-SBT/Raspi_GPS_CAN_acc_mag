@@ -43,13 +43,13 @@ def run():
                     for i in range(len(last_10_coords))
                 )
 
-            # Ha az adatok a tartományon belül vannak, kiírjuk őket
-            if in_range:
-                print("GPS adatok a tartományon belül:")
-                for i, (lon, lat) in enumerate(last_10_coords, start=1):
-                    print(f"{i}. Adat - Hosszúság: {lon}, Szélesség: {lat}")
-            else:
-                print("GPS adatok nem esnek a tartományon belül.")
+                # Ha az adatok a tartományon belül vannak, kiírjuk őket
+                if in_range:
+                    print("GPS adatok a tartományon belül:")
+                    for i, (lon, lat) in enumerate(last_10_coords, start=1):
+                        print(f"{i}. Adat - Hosszúság: {lon}, Szélesség: {lat}")
+                else:
+                    print("GPS adatok nem esnek a tartományon belül.")
 
         except (KeyboardInterrupt, SystemExit):
             print("Kilépés...")
