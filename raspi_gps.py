@@ -74,6 +74,7 @@ def speed_on_geoid(lat1, lon1, lat2, lon2, tmstmp1, tmstmp2):
       speed_kph = (speed_mps * 3600.0) / 1000.0
       return speed_kph
 
+# define variables for gps_speed comparison:
 i = 1
 lat_1 = 1
 lon_1 = 1
@@ -88,6 +89,7 @@ def run():
             try:
                 gps_err1 = 0 # Communication OK with GPS module
                 setNsend("GPS_Comm_Error", "Error_message", gps_err1)
+                # How it would look like without using the setNsend function
                 # gps_err_msg1 = Point("GPS_Comm_Error") \
                 #   .tag("sensor", "sparkfun_ublox_NEO-M9N") \
                 #   .field("Error_message", gps_err1) \
@@ -115,6 +117,8 @@ def run():
                 
                 setNsend("heading", "Heading_of_Motion", geo.headMot)
 
+                # This is an official code, but it doesn't fckn work, goes into an endless loop at "veh = gps.veh_attitude()" without any error messages:
+
                 # print("anyadat")
                 # veh = gps.veh_attitude()
                 # print("a kurva anyadat")
@@ -126,6 +130,7 @@ def run():
                 # print("Pitch Acceleration: ", veh.accPitch)
                 # print("Heading Acceleration: ", veh.accHeading)
 
+                # change variables to global for the if statements
                 gps_time = gps.date_time()
                 global i
                 global lat_1
@@ -134,31 +139,26 @@ def run():
                 global lon_2
                 global timestmp1
                 global timestmp2
+                
                 if i < 3:
+                    # save earlier the state of lat, lon and time for compare, increment the state counter
                     if i == 1:
                       lat_1 = geo.lat
                       lon_1 = geo.lon
                       timestmp1 = gps_time.sec
-                      #print("act i: ", i, "lat_1: ", lat_1, "lon_1: ", lon_1, "timestmp1: ", timestmp1)
                       i += 1
-                      #print("incremented i: ", i)
+                    # save the later state of lat, lon and time for compare, reset the state counter
                     elif i == 2:
                       lat_2 = geo.lat
                       lon_2 = geo.lon
                       timestmp2 = gps_time.sec
-                      #print("act i: ", i, "lat_2: ", lat_2, "lon_2: ", lon_2, "timestmp2: ", timestmp2)
                       i = 1
-                      #print("resetted i: ", i)
 
                 gps_speed = speed_on_geoid(lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2)
-                #print("lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2: ", lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2)
-                #print("gps speed",gps_speed)
 
                 setNsend("GPS_speed", "Speed", gps_speed) 
 
-                #print("Lefutott a try egyszer",datetime.now())
-
-                # time.sleep(1) # sec
+                # time.sleep(1) # sec #it's already fckn slow without sleep (cycle runs for ~2 sec) 
                     
             except (ValueError, IOError) as err:
                 setNsend("GPS_Comm_Error", "Error_message", 1) # Communication Error with GPS module
