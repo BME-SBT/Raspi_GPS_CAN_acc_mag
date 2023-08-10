@@ -83,6 +83,40 @@ lon_2 = 2
 timestmp1 = 1
 timestmp2 = 2
 
+# array for the last 10 GPS data
+last_10_coords = []
+
+def test():
+    while True:
+        try:
+            # read GPS data
+            geo = gps.geo_coords()
+            # store the last 10 data
+            last_10_coords.append((geo.lon, geo.lat))
+            # remove the oldest data if array lenght is more than 10
+            if len(last_10_coords) > 10:
+                last_10_coords.pop(0)
+
+            # check whether there is enough (10) data to compare
+            if len(last_10_coords) >= 10:
+                # ckeck whether the actual data is in range of +/-0.01 of the last 10 data
+                in_range = all(
+                    abs(last_10_coords[i][0] - geo.lon) <= 0.01 and 
+                    abs(last_10_coords[i][1] - geo.lat) <= 0.01
+                    for i in range(len(last_10_coords))
+                )
+
+                # Ha az adatok a tartományon belül vannak, kiírjuk őket
+                if in_range:
+                    print("GPS adatok a tartományon belül:")
+                    for i, (lon, lat) in enumerate(last_10_coords, start=1):
+                        print(f"{i}. Adat - Hosszúság: {lon}, Szélesség: {lat}")
+                else:
+                    print("GPS adatok nem esnek a tartományon belül")
+
+        except Exception as e:
+            print("Kilépés...")
+
 def run():
     try:
         while True:
@@ -129,6 +163,8 @@ def run():
                 # print("Roll Acceleration: ", veh.accRoll)
                 # print("Pitch Acceleration: ", veh.accPitch)
                 # print("Heading Acceleration: ", veh.accHeading)
+
+                # extremely ugly solution, to be improved
 
                 # change variables to global for the if statements
                 gps_time = gps.date_time()
