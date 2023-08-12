@@ -48,6 +48,7 @@ def get_speed():
     # read GPS data
     geo = gps.geo_coords()
     gps_time = gps.date_time()
+    print("########GPS idoooo: ", gps_time)
     # store the last 2 data
     speed_coords.append((geo.lon, geo.lat, gps_time.sec))
     # remove the oldest data if array lenght is more than 2
@@ -89,6 +90,7 @@ def get_speed():
             time_s = (tmstmp2 + 60 - tmstmp1) / 1000.0 # if the second timestamp is in the next minute
         else:
             time_s = (tmstmp2 - tmstmp1) / 1000.0
+        print("time in sec for speed: ",time_s)
         speed_mps = dist / time_s
         speed_kph = (speed_mps * 3600.0) / 1000.0
         print("lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2: ", lat1, lon1, lat2, lon2, tmstmp1, tmstmp2)
