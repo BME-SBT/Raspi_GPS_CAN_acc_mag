@@ -50,17 +50,17 @@ def get_speed():
     gps_time = gps.date_time()
     # store the last 2 data
     speed_coords.append((geo.lon, geo.lat, gps_time.sec))
-    lon1=speed_coords[0][0]
-    lat1=speed_coords[0][1]
-    lon2=speed_coords[1][0]
-    lat2=speed_coords[1][1]
-    tmstmp1=speed_coords[0][2]
-    tmstmp2=speed_coords[1][2]
     # remove the oldest data if array lenght is more than 2
     if len(speed_coords) > 2:
         speed_coords.pop(0)
     # check whether there is enough (2) data to compare
     if len(speed_coords) >= 2: # you can delete it, but the data transmission will start one cycle later (which takes seconds possibly)
+        lon1=speed_coords[0][0]
+        lat1=speed_coords[0][1]
+        lon2=speed_coords[1][0]
+        lat2=speed_coords[1][1]
+        tmstmp1=speed_coords[0][2]
+        tmstmp2=speed_coords[1][2]
         # Convert degrees to radians
         lat1 = lat1 * math.pi / 180.0
         lon1 = lon1 * math.pi / 180.0
