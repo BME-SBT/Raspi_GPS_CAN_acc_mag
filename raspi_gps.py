@@ -32,17 +32,14 @@ with open(scriptpath/'influxvars.txt', 'r') as f:
     lana_token = f.readline().strip()
 
 # sends given data to influxDB which is set in function
-def send2influx(msg2send):
-    with InfluxDBClient(url=influx_url, token=lana_token, org=org, timeout=30_000) as client:
-        write_api = client.write_api(write_options=SYNCHRONOUS)
-        write_api.write(bucket_name, org, msg2send)
-
 def setNsend (msg_type,msg_name,value):
-  influxmsg = Point(msg_type) \
+  msg2send = Point(msg_type) \
     .tag("sensor", "sparkfun_ublox_NEO-M9N") \
     .field(msg_name, value) \
     .time(datetime.utcnow(), WritePrecision.NS)
-  send2influx(influxmsg)
+  with InfluxDBClient(url=influx_url, token=lana_token, org=org, timeout=30_000) as client:
+        write_api = client.write_api(write_options=SYNCHRONOUS)
+        write_api.write(bucket_name, org, msg2send)
 
 def speed_on_geoid(lat1, lon1, lat2, lon2, tmstmp1, tmstmp2):
       # Convert degrees to radians
@@ -120,14 +117,7 @@ def run():
     try:
         while True:
             try:
-                gps_err1 = 0 # Communication OK with GPS module
-                setNsend("GPS_Comm_Error", "Error_message", gps_err1)
-                # How it would look like without using the setNsend function
-                # gps_err_msg1 = Point("GPS_Comm_Error") \
-                #   .tag("sensor", "sparkfun_ublox_NEO-M9N") \
-                #   .field("Error_message", gps_err1) \
-                #   .time(datetime.utcnow(), WritePrecision.NS)
-                # send2influx(gps_err_msg1)
+                setNsend("GPS_Comm_Error", "Error_message", 0) # Communication OK with GPS module
 
                 geo = gps.geo_coords()
                 
@@ -144,12 +134,15 @@ def run():
                 #precision_check()
 
                 if precision_check()==True:
-                    gps_coords = Point("GPS_coordinates") \
-                    .tag("sensor", "sparkfun_ublox_NEO-M9N") \
-                    .field("Longitude", geo.lon) \
-                    .field("Latitude", geo.lat) \
-                    .time(datetime.utcnow(), WritePrecision.NS)
-                    send2influx(gps_coords)
+                    # gps_coords = Point("GPS_coordinates") \
+                    # .tag("sensor", "sparkfun_ublox_NEO-M9N") \
+                    # .field("Longitude", geo.lon) \
+                    # .field("Latitude", geo.lat) \
+                    # .time(datetime.utcnow(), WritePrecision.NS)
+                    # send2influx(gps_coords)
+
+                    setNsend("GPS_coordinates", "Longitude", geo.lon)
+                    setNsend("GPS_coordinates", "Latitude", geo.lat)
                     
                     setNsend("heading", "Heading_of_Motion", geo.headMot)
 
