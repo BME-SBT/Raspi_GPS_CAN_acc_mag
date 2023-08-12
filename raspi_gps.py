@@ -188,6 +188,9 @@ def run():
 
                     gps_speed = speed_on_geoid(lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2)
 
+                    print("lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2: ", lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2)
+                    print("gps speed",gps_speed)
+
                     setNsend("GPS_speed", "Speed", gps_speed) 
                 # else:
                 #     continue
