@@ -32,69 +32,114 @@ with open(scriptpath/'influxvars.txt', 'r') as f:
     lana_token = f.readline().strip()
 
 # sends given data to influxDB which is set in function
-def send2influx(msg2send):
-    with InfluxDBClient(url=influx_url, token=lana_token, org=org, timeout=30_000) as client:
-        write_api = client.write_api(write_options=SYNCHRONOUS)
-        write_api.write(bucket_name, org, msg2send)
-
 def setNsend (msg_type,msg_name,value):
-  influxmsg = Point(msg_type) \
+  msg2send = Point(msg_type) \
     .tag("sensor", "sparkfun_ublox_NEO-M9N") \
     .field(msg_name, value) \
     .time(datetime.utcnow(), WritePrecision.NS)
-  send2influx(influxmsg)
+  with InfluxDBClient(url=influx_url, token=lana_token, org=org, timeout=30_000) as client:
+        write_api = client.write_api(write_options=SYNCHRONOUS)
+        write_api.write(bucket_name, org, msg2send)
 
-def speed_on_geoid(lat1, lon1, lat2, lon2, tmstmp1, tmstmp2):
-      # Convert degrees to radians
-      lat1 = lat1 * math.pi / 180.0
-      lon1 = lon1 * math.pi / 180.0
-      lat2 = lat2 * math.pi / 180.0
-      lon2 = lon2 * math.pi / 180.0
-      # radius of earth in metres
-      r = 6378100
-      # P
-      rho1 = r * math.cos(lat1)
-      z1 = r * math.sin(lat1)
-      x1 = rho1 * math.cos(lon1)
-      y1 = rho1 * math.sin(lon1)
-      # Q
-      rho2 = r * math.cos(lat2)
-      z2 = r * math.sin(lat2)
-      x2 = rho2 * math.cos(lon2)
-      y2 = rho2 * math.sin(lon2)
-      # Dot product
-      dot = (x1 * x2 + y1 * y2 + z1 * z2)
-      cos_theta = dot / (r * r)
-      theta = math.acos(cos_theta)
-      # Distance in Metres
-      dist = r * theta
-      # timestamp is in milliseconds
-      time_s = (tmstmp2 - tmstmp1) / 1000.0
-      speed_mps = dist / time_s
-      speed_kph = (speed_mps * 3600.0) / 1000.0
-      return speed_kph
+# array for the last 2 GPS data
+speed_coords = []
 
-i = 1
-lat_1 = 1
-lon_1 = 1
-lat_2 = 2
-lon_2 = 2
-timestmp1 = 1
-timestmp2 = 2
+def get_speed():
+    # read GPS data
+    geo = gps.geo_coords()
+    gps_time = gps.date_time()
+    #print("########GPS idoooo: ", gps_time)
+    # store the last 2 data
+    speed_coords.append((geo.lon, geo.lat, gps_time.sec))
+    # remove the oldest data if array lenght is more than 2
+    if len(speed_coords) > 2:
+        speed_coords.pop(0)
+    # check whether there is enough (2) data to compare
+    if len(speed_coords) >= 2: # you can delete it, but the data transmission will start one cycle later (which takes seconds possibly)
+        lon1=speed_coords[0][0]
+        lat1=speed_coords[0][1]
+        lon2=speed_coords[1][0]
+        lat2=speed_coords[1][1]
+        tmstmp1=speed_coords[0][2]
+        tmstmp2=speed_coords[1][2]
+        # Convert degrees to radians
+        lat1 = lat1 * math.pi / 180.0
+        lon1 = lon1 * math.pi / 180.0
+        lat2 = lat2 * math.pi / 180.0
+        lon2 = lon2 * math.pi / 180.0
+        # radius of earth in metres
+        r = 6378100
+        # P
+        rho1 = r * math.cos(lat1)
+        z1 = r * math.sin(lat1)
+        x1 = rho1 * math.cos(lon1)
+        y1 = rho1 * math.sin(lon1)
+        # Q
+        rho2 = r * math.cos(lat2)
+        z2 = r * math.sin(lat2)
+        x2 = rho2 * math.cos(lon2)
+        y2 = rho2 * math.sin(lon2)
+        # Dot product
+        dot = (x1 * x2 + y1 * y2 + z1 * z2)
+        cos_theta = dot / (r * r)
+        theta = math.acos(cos_theta)
+        # Distance in Metres
+        dist = r * theta
+        # timestamp is in milliseconds
+        if tmstmp2 < tmstmp1:
+            time_s = (tmstmp2 + 60 - tmstmp1) / 1000.0 # if the second timestamp is in the next minute
+        else:
+            time_s = (tmstmp2 - tmstmp1) / 1000.0
+        #print("time in sec for speed: ",time_s)
+        speed_mps = dist / time_s
+        speed_kph = (speed_mps * 3600.0) / 1000.0
+        #print("lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2: ", lat1, lon1, lat2, lon2, tmstmp1, tmstmp2)
+        #print("gps speed",speed_kph)
+        return speed_kph
+
+# array for the last 10 GPS data
+last_10_coords = []       
+
+def precision_check():
+    while True:
+        try:
+            # read GPS data
+            geo = gps.geo_coords()
+            # store the last 10 data
+            last_10_coords.append((geo.lon, geo.lat))
+            # remove the oldest data if array lenght is more than 10
+            if len(last_10_coords) > 10: 
+                last_10_coords.pop(0)
+
+            #print("################",datetime.now(),"#########################################")
+
+            # check whether there is enough (10) data to compare
+            if len(last_10_coords) >= 10: # you can delete it, but the data transmission will start one cycle later (which takes seconds possibly)
+                # ckeck whether the actual data is in range of +/-0.01 of the last 10 data
+                in_range = all(
+                    abs(last_10_coords[i][0] - geo.lon) <= 0.01 and 
+                    abs(last_10_coords[i][1] - geo.lat) <= 0.01
+                    for i in range(len(last_10_coords))
+                )
+                # if the latest datapoint is in the defined range, return True
+                if in_range:
+                    return True
+                else:
+                    return False
+            else:
+                return False
+        except Exception:
+            return False
 
 def run():
     try:
         while True:
             try:
-                gps_err1 = 0 # Communication OK with GPS module
-                setNsend("GPS_Comm_Error", "Error_message", gps_err1)
-                # gps_err_msg1 = Point("GPS_Comm_Error") \
-                #   .tag("sensor", "sparkfun_ublox_NEO-M9N") \
-                #   .field("Error_message", gps_err1) \
-                #   .time(datetime.utcnow(), WritePrecision.NS)
-                # send2influx(gps_err_msg1)
+                setNsend("GPS_Comm_Error", "Error_message", 0) # Communication OK with GPS module
 
                 geo = gps.geo_coords()
+                lon = geo.lon
+                lat = geo.lat
                 
                 if geo.lon == 0.0 and geo.lat == 0.0 and geo.headMot == 0.0:
                     setNsend("GPS_Position_Error", "Error_message", 1) # GPS pozicio 0, valoszinuleg nincs GPS jel, nezd meg a kek PPS LED vilagit-e
@@ -105,60 +150,19 @@ def run():
                 else:
                     setNsend("GPS_Position_Error", "Error_message", 0) # van GPS jel
                     setNsend("GPS_Motion_Error", "Error_message", 0) # Van GPS jel, halad a hajo
-                
-                gps_coords = Point("GPS_coordinates") \
-                  .tag("sensor", "sparkfun_ublox_NEO-M9N") \
-                  .field("Longitude", geo.lon) \
-                  .field("Latitude", geo.lat) \
-                  .time(datetime.utcnow(), WritePrecision.NS)
-                send2influx(gps_coords)
-                
-                setNsend("heading", "Heading_of_Motion", geo.headMot)
 
-                # print("anyadat")
-                # veh = gps.veh_attitude()
-                # print("a kurva anyadat")
-                # print("Roll: ", veh.att_roll)
-                # print("a jo edes rohadt kurva anyadat")
-                # print("Pitch: ", veh.pitch)
-                # print("Heading: ", veh.heading)
-                # print("Roll Acceleration: ", veh.accRoll)
-                # print("Pitch Acceleration: ", veh.accPitch)
-                # print("Heading Acceleration: ", veh.accHeading)
+                if precision_check()==True:
+                    #print("elvileg most pontos!!!!!!!!!!!!!!!")
+                    #print("Longitude", geo.lon, "Latitude", geo.lat)
 
-                gps_time = gps.date_time()
-                global i
-                global lat_1
-                global lon_1
-                global lat_2
-                global lon_2
-                global timestmp1
-                global timestmp2
-                if i < 3:
-                    if i == 1:
-                      lat_1 = geo.lat
-                      lon_1 = geo.lon
-                      timestmp1 = gps_time.sec
-                      #print("act i: ", i, "lat_1: ", lat_1, "lon_1: ", lon_1, "timestmp1: ", timestmp1)
-                      i += 1
-                      #print("incremented i: ", i)
-                    elif i == 2:
-                      lat_2 = geo.lat
-                      lon_2 = geo.lon
-                      timestmp2 = gps_time.sec
-                      #print("act i: ", i, "lat_2: ", lat_2, "lon_2: ", lon_2, "timestmp2: ", timestmp2)
-                      i = 1
-                      #print("resetted i: ", i)
+                    setNsend("GPS_coordinates", "Longitude", geo.lon)
+                    setNsend("GPS_coordinates", "Latitude", geo.lat)
+                    
+                    setNsend("heading", "Heading_of_Motion", geo.headMot)
+                 
+                    setNsend("GPS_speed", "Speed", get_speed()) 
 
-                gps_speed = speed_on_geoid(lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2)
-                #print("lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2: ", lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2)
-                #print("gps speed",gps_speed)
-
-                setNsend("GPS_speed", "Speed", gps_speed) 
-
-                #print("Lefutott a try egyszer",datetime.now())
-
-                # time.sleep(1) # sec
+                # time.sleep(1) # sec #it's already fckn slow without sleep (cycle runs for ~2 sec) 
                     
             except (ValueError, IOError) as err:
                 setNsend("GPS_Comm_Error", "Error_message", 1) # Communication Error with GPS module
