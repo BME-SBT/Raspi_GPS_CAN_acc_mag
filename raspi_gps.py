@@ -94,6 +94,15 @@ def precision_check():
             if len(last_10_coords) > 10:
                 last_10_coords.pop(0)
 
+            print("#########################################")
+            # print("lon:",geo.lon)
+            # print("lat:",geo.lat)
+            # print("The 2D-Array is:")
+            # for i in last_10_coords:
+            #     for j in i:
+            #         print(j, end=" ")
+            #     print()
+
             # check whether there is enough (10) data to compare
             if len(last_10_coords) >= 10:
                 # ckeck whether the actual data is in range of +/-0.01 of the last 10 data
@@ -105,6 +114,9 @@ def precision_check():
 
                 # if the latest datapoint is in the defined range, return True
                 if in_range:
+                    print("GPS adatok a tartományon belül:")
+                    for i, (lon, lat) in enumerate(last_10_coords, start=1):
+                        print(f"{i}. Adat - Hosszúság: {lon}, Szélesség: {lat}")
                     return True
                 else:
                     return False
@@ -140,6 +152,9 @@ def run():
                     # .field("Latitude", geo.lat) \
                     # .time(datetime.utcnow(), WritePrecision.NS)
                     # send2influx(gps_coords)
+
+                    print("elvileg most pontos!!!!!!!!!!!!!!!")
+                    print("Longitude", geo.lon, "Latitude", geo.lat)
 
                     setNsend("GPS_coordinates", "Longitude", geo.lon)
                     setNsend("GPS_coordinates", "Latitude", geo.lat)
