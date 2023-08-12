@@ -86,7 +86,7 @@ timestmp2 = 2
 # array for the last 10 GPS data
 last_10_coords = []
 
-def test():
+def precision_check():
     while True:
         try:
             # read GPS data
@@ -106,16 +106,15 @@ def test():
                     for i in range(len(last_10_coords))
                 )
 
-                # Ha az adatok a tartományon belül vannak, kiírjuk őket
+                # if the latest datapoint is in the defined range, return True
                 if in_range:
-                    print("GPS adatok a tartományon belül:")
-                    for i, (lon, lat) in enumerate(last_10_coords, start=1):
-                        print(f"{i}. Adat - Hosszúság: {lon}, Szélesség: {lat}")
+                    return True
                 else:
-                    print("GPS adatok nem esnek a tartományon belül")
-
-        except Exception as e:
-            print("Kilépés...")
+                    return False
+            else:
+                return False
+        except Exception:
+            return False
 
 def run():
     try:
@@ -142,57 +141,48 @@ def run():
                     setNsend("GPS_Position_Error", "Error_message", 0) # van GPS jel
                     setNsend("GPS_Motion_Error", "Error_message", 0) # Van GPS jel, halad a hajo
                 
-                gps_coords = Point("GPS_coordinates") \
-                  .tag("sensor", "sparkfun_ublox_NEO-M9N") \
-                  .field("Longitude", geo.lon) \
-                  .field("Latitude", geo.lat) \
-                  .time(datetime.utcnow(), WritePrecision.NS)
-                send2influx(gps_coords)
-                
-                setNsend("heading", "Heading_of_Motion", geo.headMot)
+                #precision_check()
 
-                # This is an official code, but it doesn't fckn work, goes into an endless loop at "veh = gps.veh_attitude()" without any error messages:
+                if precision_check()==True:
+                    gps_coords = Point("GPS_coordinates") \
+                    .tag("sensor", "sparkfun_ublox_NEO-M9N") \
+                    .field("Longitude", geo.lon) \
+                    .field("Latitude", geo.lat) \
+                    .time(datetime.utcnow(), WritePrecision.NS)
+                    send2influx(gps_coords)
+                    
+                    setNsend("heading", "Heading_of_Motion", geo.headMot)
 
-                # print("anyadat")
-                # veh = gps.veh_attitude()
-                # print("a kurva anyadat")
-                # print("Roll: ", veh.att_roll)
-                # print("a jo edes rohadt kurva anyadat")
-                # print("Pitch: ", veh.pitch)
-                # print("Heading: ", veh.heading)
-                # print("Roll Acceleration: ", veh.accRoll)
-                # print("Pitch Acceleration: ", veh.accPitch)
-                # print("Heading Acceleration: ", veh.accHeading)
+                    # extremely ugly solution, to be improved
+                    # change variables to global for the if statements
+                    gps_time = gps.date_time()
+                    global i
+                    global lat_1
+                    global lon_1
+                    global lat_2
+                    global lon_2
+                    global timestmp1
+                    global timestmp2
+                    
+                    if i < 3:
+                        # save earlier the state of lat, lon and time for compare, increment the state counter
+                        if i == 1:
+                            lat_1 = geo.lat
+                            lon_1 = geo.lon
+                            timestmp1 = gps_time.sec
+                            i += 1
+                            # save the later state of lat, lon and time for compare, reset the state counter
+                        elif i == 2:
+                            lat_2 = geo.lat
+                            lon_2 = geo.lon
+                            timestmp2 = gps_time.sec
+                            i = 1
 
-                # extremely ugly solution, to be improved
+                    gps_speed = speed_on_geoid(lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2)
 
-                # change variables to global for the if statements
-                gps_time = gps.date_time()
-                global i
-                global lat_1
-                global lon_1
-                global lat_2
-                global lon_2
-                global timestmp1
-                global timestmp2
-                
-                if i < 3:
-                    # save earlier the state of lat, lon and time for compare, increment the state counter
-                    if i == 1:
-                      lat_1 = geo.lat
-                      lon_1 = geo.lon
-                      timestmp1 = gps_time.sec
-                      i += 1
-                    # save the later state of lat, lon and time for compare, reset the state counter
-                    elif i == 2:
-                      lat_2 = geo.lat
-                      lon_2 = geo.lon
-                      timestmp2 = gps_time.sec
-                      i = 1
-
-                gps_speed = speed_on_geoid(lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2)
-
-                setNsend("GPS_speed", "Speed", gps_speed) 
+                    setNsend("GPS_speed", "Speed", gps_speed) 
+                # else:
+                #     continue
 
                 # time.sleep(1) # sec #it's already fckn slow without sleep (cycle runs for ~2 sec) 
                     
