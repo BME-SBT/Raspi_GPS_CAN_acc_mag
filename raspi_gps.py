@@ -41,7 +41,7 @@ def setNsend (msg_type,msg_name,value):
         write_api = client.write_api(write_options=SYNCHRONOUS)
         write_api.write(bucket_name, org, msg2send)
 
-def speed_on_geoid(lat1, lon1, lat2, lon2, tmstmp1, tmstmp2):
+def speed_on_geoid(lon1, lat1, lon2, lat2, tmstmp1, tmstmp2):
       # Convert degrees to radians
       lat1 = lat1 * math.pi / 180.0
       lon1 = lon1 * math.pi / 180.0
@@ -69,19 +69,39 @@ def speed_on_geoid(lat1, lon1, lat2, lon2, tmstmp1, tmstmp2):
       time_s = (tmstmp2 - tmstmp1) / 1000.0
       speed_mps = dist / time_s
       speed_kph = (speed_mps * 3600.0) / 1000.0
+      print("lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2: ", lat1, lon1, lat2, lon2, tmstmp1, tmstmp2)
+      print("gps speed",speed_kph)
       return speed_kph
 
 # define variables for gps_speed comparison:
-i = 1
-lat_1 = 1
-lon_1 = 1
-lat_2 = 2
-lon_2 = 2
-timestmp1 = 1
-timestmp2 = 2
+# i = 1
+# lat_1 = 1
+# lon_1 = 1
+# lat_2 = 2
+# lon_2 = 2
+# timestmp1 = 1
+# timestmp2 = 2
 
 # array for the last 10 GPS data
 last_10_coords = []
+
+# array for the last 2 GPS data
+speed_coords = []
+
+def get_speed():
+    # read GPS data
+    geo = gps.geo_coords()
+    gps_time = gps.date_time()
+    # store the last 2 data
+    speed_coords.append((geo.lon, geo.lat, gps_time.sec))
+    # remove the oldest data if array lenght is more than 2
+    if len(speed_coords) > 2:
+        speed_coords.pop(0)
+    # check whether there is enough (2) data to compare
+    if len(speed_coords) >= 2:
+        gps_speed = speed_on_geoid(speed_coords[0][0],speed_coords[0][1],speed_coords[1][0],speed_coords[1][1],speed_coords[0][2],speed_coords[1][2])
+        return gps_speed
+        
 
 def precision_check():
     while True:
@@ -163,35 +183,34 @@ def run():
 
                     # extremely ugly solution, to be improved
                     # change variables to global for the if statements
-                    gps_time = gps.date_time()
-                    global i
-                    global lat_1
-                    global lon_1
-                    global lat_2
-                    global lon_2
-                    global timestmp1
-                    global timestmp2
+                    # gps_time = gps.date_time()
+                    # global i
+                    # global lat_1
+                    # global lon_1
+                    # global lat_2
+                    # global lon_2
+                    # global timestmp1
+                    # global timestmp2
                     
-                    if i < 3:
-                        # save earlier the state of lat, lon and time for compare, increment the state counter
-                        if i == 1:
-                            lat_1 = geo.lat
-                            lon_1 = geo.lon
-                            timestmp1 = gps_time.sec
-                            i += 1
-                            # save the later state of lat, lon and time for compare, reset the state counter
-                        elif i == 2:
-                            lat_2 = geo.lat
-                            lon_2 = geo.lon
-                            timestmp2 = gps_time.sec
-                            i = 1
+                    # if i < 3:
+                    #     # save earlier the state of lat, lon and time for compare, increment the state counter
+                    #     if i == 1:
+                    #         lat_1 = geo.lat
+                    #         lon_1 = geo.lon
+                    #         timestmp1 = gps_time.sec
+                    #         i += 1
+                    #         # save the later state of lat, lon and time for compare, reset the state counter
+                    #     elif i == 2:
+                    #         lat_2 = geo.lat
+                    #         lon_2 = geo.lon
+                    #         timestmp2 = gps_time.sec
+                    #         i = 1
 
-                    gps_speed = speed_on_geoid(lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2)
+                    # gps_speed = speed_on_geoid(lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2)
+                    
+                    
 
-                    print("lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2: ", lat_1, lon_1, lat_2, lon_2, timestmp1, timestmp2)
-                    print("gps speed",gps_speed)
-
-                    setNsend("GPS_speed", "Speed", gps_speed) 
+                    setNsend("GPS_speed", "Speed", get_speed()) 
                 # else:
                 #     continue
 
